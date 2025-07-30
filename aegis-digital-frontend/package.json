@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "ethers": "^6.15.0",
+    "ipfs-http-client": "^60.0.1",
+    "wagmi": "^2.16.0"
+  }
+}
