@@ -191,7 +191,8 @@ function HeroSection() {
   const HeroTitle = () => (
     <div className="text-center lg:text-left space-y-6">
       <h1 className="neubrutal-text-title text-4xl sm:text-5xl lg:text-6xl xl:text-7xl leading-tight">
-        DATA SOVEREIGNTY IS <span className="neubrutal-bg-yellow px-2 lg:px-3 inline-block">YOURS</span>
+        DATA SOVEREIGNTY IS 
+        <span className="neubrutal-bg-yellow px-3 lg:px-4 block mt-2 lg:mt-3"> YOURS</span>
       </h1>
       
       <p className="text-lg lg:text-xl text-black max-w-2xl mx-auto lg:mx-0 leading-relaxed font-bold">

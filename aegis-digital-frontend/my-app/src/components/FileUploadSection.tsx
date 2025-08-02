@@ -5,6 +5,13 @@ import { useAccount, useReadContract, useSimulateContract, useWriteContract } fr
 import { ethers } from 'ethers';
 import { CONTRACT_ADDRESSES, DID_REGISTRY_ABI, FILE_REGISTRY_ABI, ACCESS_CONTROL_ABI } from '../config/contracts';
 import { IPFSService } from '../services/ipfs';
+import { 
+  BadgeCheck, 
+  Upload, 
+  Zap, 
+  Share2, 
+  Loader2 
+} from 'lucide-react';
 
 export function FileUploadSection() {
   const { address, isConnected } = useAccount();
@@ -165,107 +172,104 @@ export function FileUploadSection() {
   };
 
   return (
-    <section className="py-24 bg-white">
-      <div className="container mx-auto px-6 max-w-6xl">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-            File Management & <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">AI Analysis</span>
+    <section id="scanner" className="py-16 lg:py-24 bg-gray-100">
+      <div className="container mx-auto px-4 lg:px-6 max-w-6xl">
+        <div className="text-center mb-12 lg:mb-16">
+          <h2 className="neubrutal-text-title text-3xl sm:text-4xl lg:text-5xl mb-4 lg:mb-6">
+            FILE MANAGEMENT & <span className="neubrutal-bg-pink px-2 lg:px-4 block sm:inline mt-1 sm:mt-0">AI ANALYSIS</span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-lg lg:text-xl text-black max-w-3xl mx-auto font-bold">
             Upload files to IPFS, register ownership on blockchain, and leverage AI for content analysis
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           {/* DID Registration Section */}
-          <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 rounded-3xl border border-gray-200">
-            <div className="flex items-center mb-6">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center mr-4">
-                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" className="text-white">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                </svg>
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900">Digital Identity</h3>
-            </div>
-            
-            <div className="space-y-6">
-              <div className="bg-white p-4 rounded-xl border border-gray-200">
-                <p className="text-sm font-medium text-gray-600 mb-2">Your DID:</p>
-                <p className="font-mono text-sm text-gray-900 bg-gray-50 p-3 rounded-lg break-all">{userDID}</p>
+            <div className="neubrutal-card p-6 lg:p-8">
+              <div className="flex items-center mb-4 lg:mb-6">
+                <div className="w-10 h-10 lg:w-12 lg:h-12 neubrutal-bg-lime neubrutal-border neubrutal-shadow flex items-center justify-center mr-3 lg:mr-4">
+                  <BadgeCheck className="w-5 h-5 lg:w-6 lg:h-6 text-black" />
+                </div>
+                <h3 className="text-xl lg:text-2xl font-bold text-black">DIGITAL IDENTITY</h3>
+              </div>            
+              <div className="space-y-4 lg:space-y-6">
+              <div className="neubrutal-card p-3 lg:p-4">
+                <p className="text-xs lg:text-sm font-bold text-black mb-2">YOUR DID:</p>
+                <p className="font-mono text-xs lg:text-sm text-black neubrutal-bg-yellow p-2 lg:p-3 neubrutal-border break-all">{userDID}</p>
               </div>
               
               <button 
                 onClick={handleRegisterDID} 
                 disabled={!isConnected || isWriteRegisterDIDPending || !registerDIDSimulateData?.request} 
-                className="w-full px-6 py-4 bg-green-600 text-white font-semibold rounded-xl shadow-lg hover:bg-green-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                className="neubrutal-button w-full flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isWriteRegisterDIDPending ? (
                   <>
-                    <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-3"></div>
-                    Processing...
+                    <Loader2 className="w-4 h-4 lg:w-5 lg:h-5 mr-2 lg:mr-3 animate-spin" />
+                    PROCESSING...
                   </>
                 ) : (
-                  'Register My DID'
+                  'REGISTER MY DID'
                 )}
               </button>
             </div>
           </div>
 
           {/* File Upload Section */}
-          <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 rounded-3xl border border-gray-200">
-            <div className="flex items-center mb-6">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center mr-4">
-                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" className="text-white">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
+          <div className="neubrutal-card p-6 lg:p-8">
+            <div className="flex items-center mb-4 lg:mb-6">
+              <div className="w-10 h-10 lg:w-12 lg:h-12 neubrutal-bg-cyan neubrutal-border neubrutal-shadow flex items-center justify-center mr-3 lg:mr-4">
+                <Upload className="w-5 h-5 lg:w-6 lg:h-6 text-black" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900">File Upload</h3>
+              <h3 className="text-xl lg:text-2xl font-bold text-black">FILE UPLOAD</h3>
             </div>
             
-            <div className="space-y-6">
-              <div className="bg-white p-6 rounded-xl border border-gray-200 space-y-4">
+            <div className="space-y-4 lg:space-y-6">
+              <div className="neubrutal-card p-4 lg:p-6 space-y-3 lg:space-y-4">
                 <input
                   type="file"
                   onChange={handleFileChange}
-                  className="block w-full text-sm text-gray-600 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-purple-500 file:text-white hover:file:bg-purple-600 transition-colors cursor-pointer"
+                  className="neubrutal-input block w-full text-xs sm:text-sm text-black file:mr-2 lg:file:mr-4 file:py-2 file:px-3 lg:file:py-3 lg:file:px-6 file:border-0 file:text-xs lg:file:text-sm file:font-bold file:neubrutal-button hover:file:scale-105 transition-transform cursor-pointer"
                 />
                 <button
                   onClick={handleUpload}
                   disabled={!selectedFile || !isConnected || userDIDData === ethers.ZeroHash || isWriteUploadFilePending}
-                  className="w-full px-6 py-4 bg-purple-600 text-white font-semibold rounded-xl shadow-lg hover:bg-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  className="neubrutal-button w-full flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isWriteUploadFilePending ? (
                     <>
-                      <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-3"></div>
-                      Processing...
+                      <Loader2 className="w-4 h-4 lg:w-5 lg:h-5 mr-2 lg:mr-3 animate-spin" />
+                      <span className="hidden sm:inline">PROCESSING...</span>
+                      <span className="sm:hidden">...</span>
                     </>
                   ) : (
-                    'Upload & Analyze'
+                    <>
+                      <span className="hidden sm:inline">UPLOAD & ANALYZE</span>
+                      <span className="sm:hidden">UPLOAD</span>
+                    </>
                   )}
                 </button>
               </div>
               
               {uploadStatus && (
-                <div className={`p-4 rounded-xl border ${
+                <div className={`p-3 lg:p-4 neubrutal-border neubrutal-shadow-light font-bold ${
                   uploadStatus.includes('failed') || uploadStatus.includes('error') 
-                    ? 'bg-red-50 border-red-200 text-red-700' 
+                    ? 'bg-red-300' 
                     : uploadStatus.includes('success') || uploadStatus.includes('complete')
-                    ? 'bg-green-50 border-green-200 text-green-700'
-                    : 'bg-blue-50 border-blue-200 text-blue-700'
+                    ? 'neubrutal-bg-lime'
+                    : 'neubrutal-bg-cyan'
                 }`}>
-                  <p className="text-sm font-medium">{uploadStatus}</p>
+                  <p className="text-xs lg:text-sm font-bold text-black">{uploadStatus}</p>
                 </div>
               )}
               
               {aiAnalysisResult !== null && (
-                <div className="bg-white p-6 rounded-xl border border-gray-200">
-                  <h4 className="font-semibold text-lg text-gray-900 mb-3 flex items-center">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" className="mr-2 text-purple-600">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                    AI Analysis Result
+                <div className="neubrutal-card p-4 lg:p-6">
+                  <h4 className="font-bold text-base lg:text-lg text-black mb-3 flex items-center">
+                    <Zap className="w-4 h-4 lg:w-5 lg:h-5 mr-2 text-black" />
+                    AI ANALYSIS RESULT
                   </h4>
-                  <pre className="text-sm whitespace-pre-wrap text-gray-700 bg-gray-50 p-4 rounded-lg overflow-auto max-h-64">
+                  <pre className="text-xs lg:text-sm whitespace-pre-wrap text-black neubrutal-bg-yellow p-3 lg:p-4 neubrutal-border overflow-auto max-h-48 lg:max-h-64 font-mono">
                     {typeof aiAnalysisResult === 'string' 
                       ? aiAnalysisResult 
                       : JSON.stringify(aiAnalysisResult, null, 2)}
@@ -277,27 +281,27 @@ export function FileUploadSection() {
         </div>
 
         {/* Share File Section */}
-        <div className="mt-16 bg-gradient-to-br from-indigo-50 to-purple-50 p-8 rounded-3xl border border-indigo-200">
-          <div className="text-center mb-8">
-            <h3 className="text-3xl font-bold text-gray-900 mb-4">Share File Access</h3>
-            <p className="text-lg text-gray-600">Grant or revoke access to your files for other users</p>
+        <div className="mt-12 lg:mt-16 neubrutal-card p-6 lg:p-8">
+          <div className="text-center mb-6 lg:mb-8">
+            <h3 className="text-2xl lg:text-3xl font-bold text-black mb-3 lg:mb-4">SHARE FILE ACCESS</h3>
+            <p className="text-base lg:text-lg text-black font-bold">Grant or revoke access to your files for other users</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            <div className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 max-w-4xl mx-auto">
+            <div className="space-y-3 lg:space-y-4">
               <input
                 type="text"
                 placeholder="File CID (from upload result)"
                 value={fileCIDToShare}
                 onChange={(e) => setFileCIDToShare(e.target.value)}
-                className="w-full p-4 rounded-xl bg-white border border-indigo-200 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder-gray-500"
+                className="neubrutal-input w-full"
               />
               <input
                 type="text"
                 placeholder="Recipient DID (e.g., 0x... or user's DID)"
                 value={recipientDID}
                 onChange={(e) => setRecipientDID(e.target.value)}
-                className="w-full p-4 rounded-xl bg-white border border-indigo-200 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder-gray-500"
+                className="neubrutal-input w-full"
               />
             </div>
             
@@ -305,15 +309,20 @@ export function FileUploadSection() {
               <button
                 onClick={handleGrantAccess}
                 disabled={!isConnected || !fileCIDToShare || !recipientDID || isWriteGrantAccessPending}
-                className="w-full px-6 py-4 bg-indigo-600 text-white font-semibold rounded-xl shadow-lg hover:bg-indigo-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                className="neubrutal-button w-full flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isWriteGrantAccessPending ? (
                   <>
-                    <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-3"></div>
-                    Processing...
+                    <Loader2 className="w-4 h-4 lg:w-5 lg:h-5 mr-2 lg:mr-3 animate-spin" />
+                    <span className="hidden sm:inline">PROCESSING...</span>
+                    <span className="sm:hidden">...</span>
                   </>
                 ) : (
-                  'Grant Access'
+                  <>
+                    <Share2 className="w-4 h-4 lg:w-5 lg:h-5 mr-1 lg:mr-2" />
+                    <span className="hidden sm:inline">GRANT ACCESS</span>
+                    <span className="sm:hidden">GRANT</span>
+                  </>
                 )}
               </button>
             </div>

@@ -3,6 +3,7 @@
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { metaMask } from 'wagmi/connectors';
 import { useEffect, useState } from 'react';
+import { Wallet, LogOut } from 'lucide-react';
 
 export function ConnectWalletButton() {
   const [isMounted, setIsMounted] = useState(false);
@@ -14,8 +15,8 @@ export function ConnectWalletButton() {
   // Early return with placeholder during SSR
   if (!isMounted) {
     return (
-      <button className="btn-secondary text-sm px-4 py-1.5 opacity-50">
-        Connect Wallet
+      <button className="neubrutal-button text-sm opacity-50">
+        CONNECT WALLET
       </button>
     );
   }
@@ -36,22 +37,23 @@ function ConnectWalletButtonContent() {
   if (isConnected) {
     return (
       <div className="flex items-center space-x-4">
-        <div className="hidden sm:flex items-center space-x-3 px-4 py-2 rounded-xl bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 backdrop-blur-lg">
-          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-          <span className="text-green-300 font-bold text-sm">✅ Connected</span>
+        <div className="hidden sm:flex items-center space-x-3 px-4 py-2 neubrutal-bg-lime neubrutal-border neubrutal-shadow-light">
+          <div className="w-3 h-3 bg-black rounded-full"></div>
+          <span className="text-black font-bold text-sm">✅ CONNECTED</span>
         </div>
-        <div className="flex items-center space-x-3 px-4 py-2 bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
-            <span className="text-white font-bold text-sm">👛</span>
+        <div className="flex items-center space-x-3 px-4 py-2 neubrutal-card">
+          <div className="w-8 h-8 neubrutal-bg-yellow neubrutal-border flex items-center justify-center">
+            <Wallet className="w-4 h-4 text-black" />
           </div>
-          <span className="text-lg font-mono text-white font-semibold">
+          <span className="text-lg font-mono text-black font-bold">
             {address?.slice(0, 6)}...{address?.slice(-4)}
           </span>
           <button 
             onClick={() => disconnect()} 
-            className="text-sm text-red-400 hover:text-red-300 font-bold px-3 py-1 rounded-lg hover:bg-red-500/20 transition-all duration-300"
+            className="neubrutal-button-secondary text-xs flex items-center"
           >
-            ❌ Disconnect
+            <LogOut className="w-3 h-3 mr-1" />
+            DISCONNECT
           </button>
         </div>
       </div>
@@ -62,15 +64,15 @@ function ConnectWalletButtonContent() {
     <button 
       onClick={handleConnect} 
       disabled={isPending}
-      className="btn-secondary text-sm px-4 py-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+      className="neubrutal-button text-sm disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {isPending ? (
         <div className="flex items-center">
-          <div className="animate-spin w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full mr-2"></div>
-          Connecting...
+          <div className="animate-spin w-4 h-4 border-2 border-black border-t-transparent rounded-full mr-2"></div>
+          CONNECTING...
         </div>
       ) : (
-        'Connect Wallet'
+        'CONNECT WALLET'
       )}
     </button>
   );
