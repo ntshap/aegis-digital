@@ -18,9 +18,10 @@ const liskSepolia = defineChain({
   testnet: true,
 });
 
-// Buat konfigurasi Wagmi without connectors for now
+// Buat konfigurasi Wagmi tanpa connectors untuk sementara
 const config = createConfig({
   chains: [liskSepolia],
+  connectors: [], // Empty for now to test
   transports: {
     [liskSepolia.id]: http(),
   },
@@ -36,7 +37,7 @@ const queryClient = new QueryClient({
   },
 });
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export function ProvidersSimple({ children }: { children: React.ReactNode }) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
