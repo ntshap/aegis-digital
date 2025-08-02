@@ -153,7 +153,7 @@ export function FileListSection() {
                     <div>
                       <FileText className="w-12 h-12 mx-auto mb-4 text-black" />
                       <h4 className="text-lg font-bold text-black mb-2">YOUR FILES WILL APPEAR HERE</h4>
-                      <p className="text-black mb-4 font-bold">Once you upload files, they'll be displayed in this section with full management capabilities.</p>
+                      <p className="text-black mb-4 font-bold">Once you upload files, they&apos;ll be displayed in this section with full management capabilities.</p>
                       <div className="inline-flex items-center px-4 py-2 neubrutal-bg-cyan neubrutal-border text-black text-sm font-bold">
                         <Info className="w-4 h-4 mr-2" />
                         COMPLETE IMPLEMENTATION IN PROGRESS

@@ -32,12 +32,12 @@ export function FileUploadSection() {
   });
   const { writeContract: writeRegisterDID, isPending: isWriteRegisterDIDPending } = useWriteContract();
 
-  const [uploadFileArgs, setUploadFileArgs] = useState<[string, string]>([ethers.ZeroHash, ethers.ZeroHash]);
+  const [uploadFileArgs, setUploadFileArgs] = useState<[string, string]>(['', '']);
   const { data: uploadFileSimulateData } = useSimulateContract({
     address: CONTRACT_ADDRESSES.FILE_REGISTRY,
     abi: FILE_REGISTRY_ABI,
-    functionName: 'uploadFile',
-    args: [uploadFileArgs[0] as `0x${string}`, uploadFileArgs[1] as `0x${string}`],
+    functionName: 'registerFile',
+    args: [uploadFileArgs[0], uploadFileArgs[1]],
     query: {
       enabled: !!uploadFileArgs[0] && !!uploadFileArgs[1],
     },
@@ -126,10 +126,8 @@ export function FileUploadSection() {
       setAiAnalysisResult(aiData.ai_analysis);
       setUploadStatus(`AI analysis complete. Now registering on Lisk...`);
 
-      const fileCIDBytes32 = ethers.encodeBytes32String(fileCID.slice(0, 31));
-      const ownerDIDBytes32 = userDIDData as string;
-
-      setUploadFileArgs([fileCIDBytes32, ownerDIDBytes32]);
+      // Use string arguments for the new registerFile function
+      setUploadFileArgs([fileCID, selectedFile.name]);
 
       setTimeout(() => {
         if (uploadFileSimulateData?.request) {

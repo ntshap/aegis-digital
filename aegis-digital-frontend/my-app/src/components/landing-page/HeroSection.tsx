@@ -61,7 +61,7 @@ const RECENT_ACTIVITIES = [
 function HeroSection() {
   // Hooks
   const { address, isConnected } = useAccount();
-  const { uploadFile, isUploading: isUploadingToContract } = useFileOperations();
+  const { registerFile, isRegistering: isUploadingToContract } = useFileOperations();
   const { registerDID, isRegistering } = useDIDOperations();
   
   // State
@@ -69,7 +69,7 @@ function HeroSection() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
-  const [aiAnalysisResult, setAiAnalysisResult] = useState<any>(null);
+  const [aiAnalysisResult, setAiAnalysisResult] = useState<object | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // File Operations
@@ -111,7 +111,7 @@ function HeroSection() {
 
       // Upload file to blockchain
       const userDID = `did:lisk:${address}`;
-      await uploadFile(cid, userDID);
+      await registerFile({ ipfsHash: cid, fileName: selectedFile.name });
       
       setUploadStatus('File registered on blockchain!');
     } catch (error) {
@@ -141,7 +141,7 @@ function HeroSection() {
 
       // Upload file hash to blockchain
       const userDID = `did:lisk:${address}`;
-      await uploadFile(ipfsHash, userDID);
+      await registerFile({ ipfsHash, fileName: 'User provided IPFS hash' });
       
       setUploadStatus('IPFS hash registered on blockchain!');
     } catch (error) {
@@ -191,7 +191,7 @@ function HeroSection() {
   const HeroTitle = () => (
     <div className="text-center lg:text-left space-y-6">
       <h1 className="neubrutal-text-title text-4xl sm:text-5xl lg:text-6xl xl:text-7xl leading-tight">
-        DATA SOVEREIGNTY IS <span className="neubrutal-bg-yellow px-2 lg:px-3 inline-block">YOURS</span>
+        DATA SOVEREIGNTY IS <span className="neubrutal-bg-yellow px-3 lg:px-4">YOURS</span>
       </h1>
       
       <p className="text-lg lg:text-xl text-black max-w-2xl mx-auto lg:mx-0 leading-relaxed font-bold">
@@ -354,7 +354,7 @@ function HeroSection() {
       
       {/* Neubrutalism background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-4 lg:left-10 w-16 h-16 lg:w-24 lg:h-24 neubrutal-bg-yellow neubrutal-border neubrutal-shadow rotate-12 opacity-80"></div>
+        <div className="absolute top-12 left-4 lg:left-10 w-16 h-16 lg:w-24 lg:h-24 neubrutal-bg-yellow neubrutal-border neubrutal-shadow rotate-12 opacity-80"></div>
         <div className="absolute top-32 lg:top-40 right-8 lg:right-20 w-12 h-12 lg:w-16 lg:h-16 neubrutal-bg-pink neubrutal-border neubrutal-shadow -rotate-12 opacity-80"></div>
         <div className="absolute bottom-32 lg:bottom-40 left-8 lg:left-20 w-20 h-20 lg:w-28 lg:h-28 neubrutal-bg-cyan neubrutal-border neubrutal-shadow rotate-45 opacity-80"></div>
         <div className="absolute bottom-20 right-16 lg:right-40 w-10 h-10 lg:w-14 lg:h-14 neubrutal-bg-lime neubrutal-border neubrutal-shadow -rotate-45 opacity-80"></div>

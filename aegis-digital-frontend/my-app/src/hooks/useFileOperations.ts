@@ -1,87 +1,104 @@
-import { useState } from 'react';
-import { useAccount, useSimulateContract, useWriteContract } from 'wagmi';
-import { ethers } from 'ethers';
-import { CONTRACT_ADDRESSES, FILE_REGISTRY_ABI, ACCESS_CONTROL_ABI } from '../config/contracts';
+import {
+  usePublicClient,
+  useAccount,
+  useReadContract,
+  useWriteContract,
+  useWaitForTransactionReceipt,
+} from 'wagmi';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import {
+  CONTRACT_ADDRESSES,
+  FILE_REGISTRY_ABI,
+  ACCESS_CONTROL_ABI
+} from '../config/contracts';
 
-export const useFileOperations = () => {
-  const { isConnected } = useAccount();
-  
-  const [uploadFileArgs, setUploadFileArgs] = useState<[string, string]>([ethers.ZeroHash, ethers.ZeroHash]);
-  const [grantAccessArgs, setGrantAccessArgs] = useState<[string, string]>([ethers.ZeroHash, ethers.ZeroHash]);
-  const [revokeAccessArgs, setRevokeAccessArgs] = useState<[string, string]>([ethers.ZeroHash, ethers.ZeroHash]);
+interface FileData {
+  owner: string;
+  ipfsHash: string;
+  fileName: string;
+  timestamp: bigint;
+  isAnalyzed: boolean;
+}
 
-  const { data: uploadFileSimulateData } = useSimulateContract({
-    address: CONTRACT_ADDRESSES.FILE_REGISTRY,
+/**
+ * @notice Sebuah React hook kustom untuk mengabstraksi semua operasi file on-chain.
+ * Ini adalah implementasi terbaik untuk WAGMI.
+ */
+export function useFileOperations() {
+  const queryClient = useQueryClient();
+  const { address, isConnected } = useAccount();
+  const { writeContractAsync } = useWriteContract();
+  const publicClient = usePublicClient();
+
+  // 1. Membaca daftar file milik user saat ini.
+  //    Hook ini akan secara otomatis memanggil fungsi `getFilesByOwner` dari kontrak.
+  const { data: userFileIds, isLoading: isFilesLoading } = useReadContract({
     abi: FILE_REGISTRY_ABI,
-    functionName: 'uploadFile',
-    args: [uploadFileArgs[0] as `0x${string}`, uploadFileArgs[1] as `0x${string}`],
+    address: CONTRACT_ADDRESSES.FILE_REGISTRY,
+    functionName: 'getFilesByOwner',
+    args: [address as `0x${string}`],
     query: {
-      enabled: !!uploadFileArgs[0] && !!uploadFileArgs[1],
+      enabled: isConnected && !!address, // Hanya aktifkan query jika terhubung dan alamat ada
     },
   });
 
-  const { data: grantAccessSimulateData } = useSimulateContract({
-    address: CONTRACT_ADDRESSES.ACCESS_CONTROL,
-    abi: ACCESS_CONTROL_ABI,
-    functionName: 'grantAccess',
-    args: [grantAccessArgs[0] as `0x${string}`, grantAccessArgs[1] as `0x${string}`],
-    query: {
-      enabled: !!grantAccessArgs[0] && !!grantAccessArgs[1],
-    },
+  // 2. Memuat detail setiap file secara paralel.
+  //    Ini adalah cara efisien untuk mengambil data on-chain.
+  const fileQueries = (userFileIds as bigint[] || []).map((fileId: bigint) => {
+    return {
+      queryKey: ['fileData', fileId.toString()],
+      queryFn: async () => {
+        if (!publicClient) throw new Error('Public client not available');
+        const fileData = await publicClient.readContract({
+          abi: FILE_REGISTRY_ABI,
+          address: CONTRACT_ADDRESSES.FILE_REGISTRY,
+          functionName: 'getFile',
+          args: [fileId],
+        });
+        return fileData as FileData;
+      },
+      enabled: isConnected && !!address,
+    };
   });
 
-  const { data: revokeAccessSimulateData } = useSimulateContract({
-    address: CONTRACT_ADDRESSES.ACCESS_CONTROL,
-    abi: ACCESS_CONTROL_ABI,
-    functionName: 'revokeAccess',
-    args: [revokeAccessArgs[0] as `0x${string}`, revokeAccessArgs[1] as `0x${string}`],
-    query: {
-      enabled: !!revokeAccessArgs[0] && !!revokeAccessArgs[1],
+  // 3. Mutasi untuk mendaftarkan file baru.
+  const registerFileMutation = useMutation({
+    mutationFn: async ({ ipfsHash, fileName }: { ipfsHash: string; fileName: string }) => {
+      // Panggil `writeContractAsync` untuk mengirim transaksi.
+      const hash = await writeContractAsync({
+        address: CONTRACT_ADDRESSES.FILE_REGISTRY,
+        abi: FILE_REGISTRY_ABI,
+        functionName: 'registerFile',
+        args: [ipfsHash, fileName],
+      });
+      return hash;
+    },
+    onSuccess: (txHash) => {
+      toast.success('Transaksi pendaftaran file berhasil dikirim!');
+      // Invalidasi cache untuk memperbarui daftar file secara otomatis.
+      queryClient.invalidateQueries({ queryKey: ['fileData'] });
+      // Gunakan useWaitForTransactionReceipt untuk menunggu konfirmasi.
+      if (publicClient) {
+        publicClient.waitForTransactionReceipt({ hash: txHash as `0x${string}` }).then(() => {
+          toast.success('File berhasil didaftarkan di Lisk!');
+        }).catch((error) => {
+          console.error("Error waiting for transaction receipt:", error);
+          toast.error('Gagal mengkonfirmasi transaksi.');
+        });
+      }
+    },
+    onError: (error) => {
+      console.error('Error saat mendaftarkan file:', error);
+      toast.error(`Gagal mendaftarkan file: ${error.message}`);
     },
   });
-
-  const { writeContract: writeUploadFile, isPending: isUploading } = useWriteContract();
-  const { writeContract: writeGrantAccess, isPending: isGranting } = useWriteContract();
-  const { writeContract: writeRevokeAccess, isPending: isRevoking } = useWriteContract();
-
-  const uploadFile = async (fileCID: string, ownerDID: string) => {
-    const fileCIDBytes32 = ethers.encodeBytes32String(fileCID.slice(0, 31));
-    setUploadFileArgs([fileCIDBytes32, ownerDID]);
-    
-    if (uploadFileSimulateData?.request) {
-      writeUploadFile(uploadFileSimulateData.request);
-    }
-  };
-
-  const grantAccess = async (fileCID: string, recipientDID: string) => {
-    const fileCIDBytes32 = ethers.encodeBytes32String(fileCID.slice(0, 31));
-    const recipientDIDBytes32 = ethers.encodeBytes32String(recipientDID);
-    setGrantAccessArgs([fileCIDBytes32, recipientDIDBytes32]);
-    
-    if (grantAccessSimulateData?.request) {
-      writeGrantAccess(grantAccessSimulateData.request);
-    }
-  };
-
-  const revokeAccess = async (fileCID: string, recipientDID: string) => {
-    const fileCIDBytes32 = ethers.encodeBytes32String(fileCID.slice(0, 31));
-    const recipientDIDBytes32 = ethers.encodeBytes32String(recipientDID);
-    setRevokeAccessArgs([fileCIDBytes32, recipientDIDBytes32]);
-    
-    if (revokeAccessSimulateData?.request) {
-      writeRevokeAccess(revokeAccessSimulateData.request);
-    }
-  };
 
   return {
-    uploadFile,
-    grantAccess,
-    revokeAccess,
-    isUploading,
-    isGranting,
-    isRevoking,
-    canUpload: isConnected && uploadFileSimulateData?.request,
-    canGrant: isConnected && grantAccessSimulateData?.request,
-    canRevoke: isConnected && revokeAccessSimulateData?.request,
+    userFileIds,
+    isFilesLoading,
+    fileQueries,
+    registerFile: registerFileMutation.mutateAsync,
+    isRegistering: registerFileMutation.isPending,
   };
-};
+}

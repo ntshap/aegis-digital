@@ -61,7 +61,7 @@ const RECENT_ACTIVITIES = [
 function HeroSection() {
   // Hooks
   const { address, isConnected } = useAccount();
-  const { uploadFile, isUploading: isUploadingToContract } = useFileOperations();
+  const { registerFile, isRegistering: isUploadingToContract } = useFileOperations();
   const { registerDID, isRegistering } = useDIDOperations();
   
   // State
@@ -69,7 +69,7 @@ function HeroSection() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
-  const [aiAnalysisResult, setAiAnalysisResult] = useState<any>(null);
+  const [aiAnalysisResult, setAiAnalysisResult] = useState<object | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // File Operations
@@ -111,7 +111,7 @@ function HeroSection() {
 
       // Upload file to blockchain
       const userDID = `did:lisk:${address}`;
-      await uploadFile(cid, userDID);
+      await registerFile({ ipfsHash: cid, fileName: selectedFile.name });
       
       setUploadStatus('File registered on blockchain!');
     } catch (error) {
@@ -141,7 +141,7 @@ function HeroSection() {
 
       // Upload file hash to blockchain
       const userDID = `did:lisk:${address}`;
-      await uploadFile(ipfsHash, userDID);
+      await registerFile({ ipfsHash, fileName: 'User provided IPFS hash' });
       
       setUploadStatus('IPFS hash registered on blockchain!');
     } catch (error) {
