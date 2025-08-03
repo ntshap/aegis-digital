@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import { useFileOperations } from '../../hooks/useFileOperations';
 import { useDIDOperations } from '../../hooks/useDIDOperations';
@@ -93,7 +93,13 @@ function HeroSection() {
   const [uploadStatus, setUploadStatus] = useState('');
   const [aiAnalysisResult, setAiAnalysisResult] = useState<object | null>(null);
   const [isAnalysisExpanded, setIsAnalysisExpanded] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Fix hydration mismatch by only showing connection status after mount
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // File Operations
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -218,7 +224,7 @@ function HeroSection() {
 
   // UI State Helpers
   const isProcessing = isUploading || isUploadingToContract || isRegistering;
-  const connectionStatus = isConnected ? 'LISK SEPOLIA CONNECTED' : 'LISK SEPOLIA - CONNECT WALLET';
+  const connectionStatus = isMounted && isConnected ? 'LISK SEPOLIA CONNECTED' : 'LISK SEPOLIA - CONNECT WALLET';
   const getStatusMessageStyle = () => {
     if (uploadStatus.includes('failed') || uploadStatus.includes('error')) return 'bg-red-300';
     if (uploadStatus.includes('success') || uploadStatus.includes('complete')) return 'neubrutal-bg-lime';
@@ -432,7 +438,7 @@ function HeroSection() {
   const StatusBadge = () => (
     <div className="flex justify-center lg:justify-start">
       <div className="inline-flex items-center px-4 py-3 neubrutal-bg-lime neubrutal-border neubrutal-shadow-light">
-        <div className={`w-3 h-3 bg-black rounded-full mr-3 ${isConnected ? 'animate-pulse' : ''}`}></div>
+        <div className={`w-3 h-3 bg-black rounded-full mr-3 ${isMounted && isConnected ? 'animate-pulse' : ''}`}></div>
         <span className="text-sm font-bold text-black">{connectionStatus}</span>
       </div>
     </div>
