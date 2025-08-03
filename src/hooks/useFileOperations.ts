@@ -3,6 +3,7 @@ import {
   useAccount,
   useReadContract,
   useWriteContract,
+  useBalance,
 } from 'wagmi';
 import { useMutation, useQueryClient, useQueries } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -28,6 +29,14 @@ export function useFileOperations() {
   const { address, isConnected } = useAccount();
   const { writeContractAsync } = useWriteContract();
   const publicClient = usePublicClient();
+  
+  // Check user's ETH balance for gas fees
+  const { data: balance } = useBalance({
+    address: address,
+    query: {
+      enabled: isConnected && !!address,
+    },
+  });
 
   // 1. Membaca daftar file milik user saat ini.
   //    Hook ini akan secara otomatis memanggil fungsi `getFilesByOwner` dari kontrak.
@@ -71,14 +80,48 @@ export function useFileOperations() {
   // 3. Mutasi untuk mendaftarkan file baru.
   const registerFileMutation = useMutation({
     mutationFn: async ({ ipfsHash, fileName }: { ipfsHash: string; fileName: string }) => {
-      // Panggil `writeContractAsync` untuk mengirim transaksi.
-      const hash = await writeContractAsync({
-        address: CONTRACT_ADDRESSES.FILE_REGISTRY,
-        abi: FILE_REGISTRY_ABI,
-        functionName: 'registerFile',
-        args: [ipfsHash, fileName],
-      });
-      return hash;
+      try {
+        // Add validation
+        if (!ipfsHash || !fileName) {
+          throw new Error('IPFS hash and file name are required');
+        }
+
+        if (!isConnected) {
+          throw new Error('Please connect your wallet first');
+        }
+
+        // Check if user has sufficient balance for gas
+        if (balance && balance.value === 0n) {
+          throw new Error('Insufficient ETH balance. Please add ETH to your wallet for gas fees.');
+        }
+
+        console.log('Registering file:', { ipfsHash, fileName, contractAddress: CONTRACT_ADDRESSES.FILE_REGISTRY });
+
+        // Panggil `writeContractAsync` untuk mengirim transaksi - let the network estimate gas
+        const hash = await writeContractAsync({
+          address: CONTRACT_ADDRESSES.FILE_REGISTRY,
+          abi: FILE_REGISTRY_ABI,
+          functionName: 'registerFile',
+          args: [ipfsHash, fileName],
+          // Remove explicit gas limit to let the network estimate
+        });
+        
+        console.log('Transaction hash:', hash);
+        return hash;
+      } catch (error: any) {
+        console.error('Contract call error:', error);
+        // Provide more specific error messages
+        if (error.message?.includes('User rejected')) {
+          throw new Error('Transaction was rejected by user');
+        } else if (error.message?.includes('insufficient funds')) {
+          throw new Error('Insufficient funds for gas fees. Please add ETH to your wallet.');
+        } else if (error.message?.includes('JSON-RPC')) {
+          throw new Error('Network error: Please check your connection to Lisk Sepolia and try again');
+        } else if (error.message?.includes('execution reverted')) {
+          throw new Error('Contract execution failed. Please check if the contract is deployed correctly.');
+        }
+        throw error;
+      }
     },
     onSuccess: (txHash) => {
       toast.success('Transaksi pendaftaran file berhasil dikirim!');

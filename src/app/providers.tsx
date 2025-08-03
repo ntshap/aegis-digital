@@ -3,6 +3,7 @@
 import { WagmiProvider, createConfig, http } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { defineChain } from 'viem';
+import { metaMask, injected } from 'wagmi/connectors';
 
 // Definisi jaringan Lisk Sepolia
 const liskSepolia = defineChain({
@@ -18,9 +19,13 @@ const liskSepolia = defineChain({
   testnet: true,
 });
 
-// Buat konfigurasi Wagmi without connectors for now
+// Buat konfigurasi Wagmi dengan connectors
 const config = createConfig({
   chains: [liskSepolia],
+  connectors: [
+    metaMask(),
+    injected(),
+  ],
   transports: {
     [liskSepolia.id]: http(),
   },
