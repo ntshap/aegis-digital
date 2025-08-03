@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAccount, useReadContract, useSimulateContract, useWriteContract } from 'wagmi';
 import { ethers } from 'ethers';
 import { CONTRACT_ADDRESSES, DID_REGISTRY_ABI, FILE_REGISTRY_ABI, ACCESS_CONTROL_ABI } from '../config/contracts';
@@ -14,10 +14,15 @@ import {
 } from 'lucide-react';
 
 export function FileUploadSection() {
+  const [isMounted, setIsMounted] = useState(false);
   const { address, isConnected } = useAccount();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadStatus, setUploadStatus] = useState('');
   const [aiAnalysisResult, setAiAnalysisResult] = useState<string | object | null>(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   const [fileCIDToShare, setFileCIDToShare] = useState('');
   const [recipientDID, setRecipientDID] = useState('');
 
@@ -27,7 +32,7 @@ export function FileUploadSection() {
     functionName: 'registerDID',
     args: [],
     query: {
-      enabled: isConnected,
+      enabled: isMounted && isConnected,
     },
   });
   const { writeContract: writeRegisterDID, isPending: isWriteRegisterDIDPending } = useWriteContract();
@@ -39,7 +44,7 @@ export function FileUploadSection() {
     functionName: 'registerFile',
     args: [uploadFileArgs[0], uploadFileArgs[1]],
     query: {
-      enabled: !!uploadFileArgs[0] && !!uploadFileArgs[1],
+      enabled: isMounted && !!uploadFileArgs[0] && !!uploadFileArgs[1],
     },
   });
   const { writeContract: writeUploadFile, isPending: isWriteUploadFilePending } = useWriteContract();
@@ -51,7 +56,7 @@ export function FileUploadSection() {
     functionName: 'grantAccess',
     args: [grantAccessArgs[0] as `0x${string}`, grantAccessArgs[1] as `0x${string}`],
     query: {
-      enabled: !!grantAccessArgs[0] && !!grantAccessArgs[1],
+      enabled: isMounted && !!grantAccessArgs[0] && !!grantAccessArgs[1],
     },
   });
   const { writeContract: writeGrantAccess, isPending: isWriteGrantAccessPending } = useWriteContract();
@@ -62,7 +67,7 @@ export function FileUploadSection() {
     functionName: 'getDID',
     args: [address as `0x${string}`],
     query: {
-      enabled: isConnected && !!address,
+      enabled: isMounted && isConnected && !!address,
     },
   });
   // Check if user has DID
@@ -184,6 +189,24 @@ export function FileUploadSection() {
       setUploadStatus(`Access grant failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
+
+  // Prevent hydration mismatch by only rendering on client side
+  if (!isMounted) {
+    return (
+      <section id="scanner" className="py-16 lg:py-24 bg-gray-100">
+        <div className="container mx-auto px-4 lg:px-6 max-w-6xl">
+          <div className="text-center mb-12 lg:mb-16">
+            <h2 className="neubrutal-text-title text-3xl sm:text-4xl lg:text-5xl mb-4 lg:mb-6">
+              FILE MANAGEMENT & <span className="neubrutal-bg-pink px-2 lg:px-4 block sm:inline mt-1 sm:mt-0">AI ANALYSIS</span>
+            </h2>
+            <p className="text-lg lg:text-xl text-black max-w-3xl mx-auto font-bold">
+              Loading...
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="scanner" className="py-16 lg:py-24 bg-gray-100">
