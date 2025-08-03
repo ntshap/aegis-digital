@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { useAccount, useReadContract, useSimulateContract, useWriteContract } from 'wagmi';
 import { ethers } from 'ethers';
 import { CONTRACT_ADDRESSES, DID_REGISTRY_ABI, FILE_REGISTRY_ABI, ACCESS_CONTROL_ABI } from '../config/contracts';
-import { IPFSService } from '../services/ipfs';
+import { ipfsService } from '../services/ipfs';
+import AIAnalysisDisplay from './AIAnalysisDisplay';
 import { 
   BadgeCheck, 
   Upload, 
@@ -17,7 +18,7 @@ export function FileUploadSection() {
   const { address, isConnected } = useAccount();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadStatus, setUploadStatus] = useState('');
-  const [aiAnalysisResult, setAiAnalysisResult] = useState<unknown>(null);
+  const [aiAnalysisResult, setAiAnalysisResult] = useState<string | object | null>(null);
   const [fileCIDToShare, setFileCIDToShare] = useState('');
   const [recipientDID, setRecipientDID] = useState('');
 
@@ -65,8 +66,10 @@ export function FileUploadSection() {
       enabled: isConnected && !!address,
     },
   });
-  const userDID = userDIDData ? ethers.decodeBytes32String(userDIDData as string) : 'N/A';
-
+  // Check if user has DID
+  const userDID = userDIDData ? (userDIDData as string) : 'N/A';
+  const hasDID = userDIDData && (userDIDData as string) !== '' && (userDIDData as string) !== 'N/A';
+  
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
       setSelectedFile(event.target.files[0]);
@@ -98,14 +101,28 @@ export function FileUploadSection() {
       setUploadStatus('Please select a file and connect your wallet.');
       return;
     }
-    if (userDIDData === ethers.ZeroHash) {
-      setUploadStatus('User DID not found. Please register your DID first.');
-      return;
+
+    // Auto-register DID if user doesn't have one
+    if (!hasDID) {
+      setUploadStatus('Setting up your digital identity first...');
+      try {
+        if (registerDIDSimulateData?.request) {
+          writeRegisterDID(registerDIDSimulateData.request);
+          setUploadStatus('Digital identity registration sent. Please confirm in MetaMask, then try uploading again.');
+          return;
+        } else {
+          setUploadStatus('Failed to prepare identity registration. Please try again.');
+          return;
+        }
+      } catch (error: unknown) {
+        setUploadStatus(`Identity setup failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        return;
+      }
     }
 
     setUploadStatus('Uploading to IPFS and analyzing with AI...');
     try {
-      const result = await IPFSService.uploadFile(selectedFile);
+      const result = await ipfsService.uploadFile(selectedFile);
       const fileCID = result;
       setUploadStatus(`File uploaded to IPFS: ${fileCID}. Now analyzing with AI...`);
 
@@ -191,26 +208,56 @@ export function FileUploadSection() {
                 <h3 className="text-xl lg:text-2xl font-bold text-black">DIGITAL IDENTITY</h3>
               </div>            
               <div className="space-y-4 lg:space-y-6">
-              <div className="neubrutal-card p-3 lg:p-4">
-                <p className="text-xs lg:text-sm font-bold text-black mb-2">YOUR DID:</p>
-                <p className="font-mono text-xs lg:text-sm text-black neubrutal-bg-yellow p-2 lg:p-3 neubrutal-border break-all">{userDID}</p>
-              </div>
-              
-              <button 
-                onClick={handleRegisterDID} 
-                disabled={!isConnected || isWriteRegisterDIDPending || !registerDIDSimulateData?.request} 
-                className="neubrutal-button w-full flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isWriteRegisterDIDPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 lg:w-5 lg:h-5 mr-2 lg:mr-3 animate-spin" />
-                    PROCESSING...
-                  </>
-                ) : (
-                  'REGISTER MY DID'
+                <div className="neubrutal-card p-3 lg:p-4">
+                  <p className="text-xs lg:text-sm font-bold text-black mb-2">YOUR DID:</p>
+                  <p className="font-mono text-xs lg:text-sm text-black neubrutal-bg-yellow p-2 lg:p-3 neubrutal-border break-all">{userDID}</p>
+                </div>
+                
+                {/* Status indicator */}
+                <div className={`p-3 lg:p-4 neubrutal-border neubrutal-shadow-light ${
+                  hasDID ? 'neubrutal-bg-lime' : 'neubrutal-bg-pink'
+                }`}>
+                  <div className="flex items-center">
+                    <div className={`w-3 h-3 rounded-full mr-3 ${hasDID ? 'bg-green-600' : 'bg-red-600'}`}></div>
+                    <span className="text-sm font-bold text-black">
+                      {hasDID ? '✅ IDENTITY VERIFIED - READY TO UPLOAD' : '⚠️ IDENTITY SETUP REQUIRED'}
+                    </span>
+                  </div>
+                  {!hasDID && (
+                    <p className="text-xs text-black mt-2 font-bold">
+                      Your digital identity will be set up automatically when you upload your first file.
+                    </p>
+                  )}
+                </div>
+                
+                {/* Only show Register DID button if user doesn't have DID and wants to do it manually */}
+                {!hasDID && (
+                  <details className="group">
+                    <summary className="cursor-pointer text-sm font-bold text-black neubrutal-bg-cyan p-3 neubrutal-border hover:scale-102 transition-transform duration-200">
+                      🔧 ADVANCED: Manual Identity Setup
+                    </summary>
+                    <div className="mt-3">
+                      <button 
+                        onClick={handleRegisterDID} 
+                        disabled={!isConnected || isWriteRegisterDIDPending || !registerDIDSimulateData?.request} 
+                        className="neubrutal-button w-full flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isWriteRegisterDIDPending ? (
+                          <>
+                            <Loader2 className="w-4 h-4 lg:w-5 lg:h-5 mr-2 lg:mr-3 animate-spin" />
+                            PROCESSING...
+                          </>
+                        ) : (
+                          '🆔 REGISTER IDENTITY NOW'
+                        )}
+                      </button>
+                      <p className="text-xs text-black mt-2 font-bold">
+                        Note: This step is optional. Your identity will be created automatically during file upload.
+                      </p>
+                    </div>
+                  </details>
                 )}
-              </button>
-            </div>
+              </div>
           </div>
 
           {/* File Upload Section */}
@@ -231,7 +278,7 @@ export function FileUploadSection() {
                 />
                 <button
                   onClick={handleUpload}
-                  disabled={!selectedFile || !isConnected || userDIDData === ethers.ZeroHash || isWriteUploadFilePending}
+                  disabled={!selectedFile || !isConnected || isWriteUploadFilePending}
                   className="neubrutal-button w-full flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isWriteUploadFilePending ? (
@@ -242,11 +289,26 @@ export function FileUploadSection() {
                     </>
                   ) : (
                     <>
-                      <span className="hidden sm:inline">UPLOAD & ANALYZE</span>
-                      <span className="sm:hidden">UPLOAD</span>
+                      <span className="hidden sm:inline">
+                        {hasDID ? '🚀 UPLOAD & ANALYZE' : '🆔 SETUP IDENTITY & UPLOAD'}
+                      </span>
+                      <span className="sm:hidden">
+                        {hasDID ? 'UPLOAD' : 'SETUP & UPLOAD'}
+                      </span>
                     </>
                   )}
                 </button>
+                
+                {/* Upload instructions */}
+                <div className="text-xs text-black font-bold p-3 neubrutal-bg-cyan neubrutal-border">
+                  <p className="mb-1">📋 WHAT HAPPENS WHEN YOU UPLOAD:</p>
+                  <ul className="space-y-1 list-none">
+                    {!hasDID && <li>1. 🆔 Create your digital identity</li>}
+                    <li>{hasDID ? '1.' : '2.'} 📤 Upload file to IPFS</li>
+                    <li>{hasDID ? '2.' : '3.'} 🤖 AI analysis & validation</li>
+                    <li>{hasDID ? '3.' : '4.'} ⛓️ Register on Lisk blockchain</li>
+                  </ul>
+                </div>
               </div>
               
               {uploadStatus && (
@@ -262,24 +324,14 @@ export function FileUploadSection() {
               )}
               
               {aiAnalysisResult !== null && (
-                <div className="neubrutal-card p-4 lg:p-6">
-                  <h4 className="font-bold text-base lg:text-lg text-black mb-3 flex items-center">
-                    <Zap className="w-4 h-4 lg:w-5 lg:h-5 mr-2 text-black" />
-                    AI ANALYSIS RESULT
-                  </h4>
-                  <pre className="text-xs lg:text-sm whitespace-pre-wrap text-black neubrutal-bg-yellow p-3 lg:p-4 neubrutal-border overflow-auto max-h-48 lg:max-h-64 font-mono">
-                    {typeof aiAnalysisResult === 'string' 
-                      ? aiAnalysisResult 
-                      : JSON.stringify(aiAnalysisResult, null, 2)}
-                  </pre>
-                </div>
+                <AIAnalysisDisplay analysisResult={aiAnalysisResult} />
               )}
             </div>
           </div>
         </div>
 
         {/* Share File Section */}
-        <div className="mt-12 lg:mt-16 neubrutal-card p-6 lg:p-8">
+        <div id="access-control" className="mt-12 lg:mt-16 neubrutal-card p-6 lg:p-8">
           <div className="text-center mb-6 lg:mb-8">
             <h3 className="text-2xl lg:text-3xl font-bold text-black mb-3 lg:mb-4">SHARE FILE ACCESS</h3>
             <p className="text-base lg:text-lg text-black font-bold">Grant or revoke access to your files for other users</p>

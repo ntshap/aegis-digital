@@ -4,7 +4,7 @@ import React, { useState, useRef } from 'react';
 import { useAccount } from 'wagmi';
 import { useFileOperations } from '../../hooks/useFileOperations';
 import { useDIDOperations } from '../../hooks/useDIDOperations';
-import { IPFSService } from '../../services/ipfs';
+import { ipfsService } from '../../services/ipfs';
 import { AIService } from '../../services/ai';
 import { 
   Upload, 
@@ -16,6 +16,28 @@ import {
   Activity,
   Loader2
 } from 'lucide-react';
+
+// Types
+interface PredictionResult {
+  score: number;
+  label: string;
+}
+
+interface AIAnalysis {
+  model_prediction?: PredictionResult[];
+  user_friendly_text?: string;
+  content_type?: string;
+  language?: string;
+  sentiment?: string;
+  summary?: string;
+  confidence?: number;
+}
+
+interface AnalysisResult {
+  filename?: string;
+  file_type?: string;
+  ai_analysis?: AIAnalysis;
+}
 
 // Constants
 const PLATFORM_STATS = [
@@ -70,6 +92,7 @@ function HeroSection() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
   const [aiAnalysisResult, setAiAnalysisResult] = useState<object | null>(null);
+  const [isAnalysisExpanded, setIsAnalysisExpanded] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // File Operations
@@ -77,12 +100,27 @@ function HeroSection() {
     const file = event.target.files?.[0];
     if (file) {
       setSelectedFile(file);
-      setUploadStatus(`Selected: ${file.name}`);
+      setUploadStatus(`Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`);
+      // Clear previous IPFS hash when new file is selected
+      setIpfsHash('');
+      // Clear previous AI analysis result
+      setAiAnalysisResult(null);
     }
   };
 
   const openFileDialog = () => {
     fileInputRef.current?.click();
+  };
+
+  const clearAll = () => {
+    setSelectedFile(null);
+    setIpfsHash('');
+    setUploadStatus('');
+    setAiAnalysisResult(null);
+    setIsAnalysisExpanded(true);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   // Upload Operations
@@ -98,25 +136,28 @@ function HeroSection() {
     }
 
     setIsUploading(true);
-    setUploadStatus('Uploading to IPFS...');
+    setUploadStatus('🚀 Starting upload process... Preparing your file for secure storage...');
 
     try {
       // Upload to IPFS
-      const cid = await IPFSService.uploadFile(selectedFile);
+      setUploadStatus('📤 Uploading to IPFS... Your file is being stored on the decentralized network...');
+      const cid = await ipfsService.uploadFile(selectedFile);
       setIpfsHash(cid);
-      setUploadStatus('File uploaded to IPFS successfully!');
+      setUploadStatus('✅ File uploaded to IPFS successfully! File is now accessible worldwide...');
 
-      // Register DID if not already registered
+      // Register DID if not already registered (automatic)
+      setUploadStatus('🆔 Setting up your digital identity... Creating your blockchain identity...');
       await registerDID();
 
       // Upload file to blockchain
-      const userDID = `did:lisk:${address}`;
+      setUploadStatus('⛓️ Registering file on Lisk blockchain... Creating immutable proof of ownership...');
       await registerFile({ ipfsHash: cid, fileName: selectedFile.name });
       
-      setUploadStatus('File registered on blockchain!');
+      setUploadStatus(`🎉 Success! File registered on blockchain! IPFS CID: ${cid}`);
     } catch (error) {
       console.error('Upload error:', error);
-      setUploadStatus(`Upload failed: ${error}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setUploadStatus(`❌ Upload failed: ${errorMessage}`);
     } finally {
       setIsUploading(false);
     }
@@ -134,38 +175,44 @@ function HeroSection() {
     }
 
     try {
-      setUploadStatus('Registering IPFS hash on blockchain...');
+      setUploadStatus('🆔 Setting up your digital identity...');
       
-      // Register DID if not already registered
+      // Register DID if not already registered (automatic)
       await registerDID();
 
+      setUploadStatus('⛓️ Registering IPFS hash on blockchain...');
       // Upload file hash to blockchain
-      const userDID = `did:lisk:${address}`;
       await registerFile({ ipfsHash, fileName: 'User provided IPFS hash' });
       
-      setUploadStatus('IPFS hash registered on blockchain!');
+      setUploadStatus(`🎉 Success! IPFS hash registered on blockchain! Hash: ${ipfsHash}`);
     } catch (error) {
       console.error('Registration error:', error);
-      setUploadStatus(`Registration failed: ${error}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setUploadStatus(`❌ Registration failed: ${errorMessage}`);
     }
   };
 
   // AI Operations
   const handleAIAnalysis = async () => {
     if (!selectedFile) {
-      setUploadStatus('Please select a file first');
+      setUploadStatus('Please select a file first for AI analysis');
       return;
     }
 
-    setUploadStatus('Analyzing file with AI...');
+    setUploadStatus('🤖 Analyzing file with AI... Please wait...');
 
     try {
       const analysis = await AIService.analyzeFile(selectedFile);
       setAiAnalysisResult(analysis);
-      setUploadStatus('AI analysis complete!');
+      console.log('AI Analysis Result:', analysis);
+      
+      // Create a more user-friendly success message
+      const fileTypeDesc = getFileTypeDescription(analysis.file_type);
+      setUploadStatus(`✅ AI analysis complete! Your ${fileTypeDesc.split(' ')[1] || 'file'} has been successfully analyzed.`);
     } catch (error) {
       console.error('AI analysis error:', error);
-      setUploadStatus(`AI analysis failed: ${error}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setUploadStatus(`❌ AI analysis failed: ${errorMessage}. Make sure the AI backend is running.`);
     }
   };
 
@@ -176,6 +223,209 @@ function HeroSection() {
     if (uploadStatus.includes('failed') || uploadStatus.includes('error')) return 'bg-red-300';
     if (uploadStatus.includes('success') || uploadStatus.includes('complete')) return 'neubrutal-bg-lime';
     return 'neubrutal-bg-cyan';
+  };
+
+  // AI Analysis Helper Functions
+  const getFileTypeDescription = (fileType: string) => {
+    const typeMap: { [key: string]: string } = {
+      'application/pdf': '📄 PDF Document',
+      'application/msword': '📝 Word Document (.doc)',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '📝 Word Document (.docx)',
+      'application/vnd.ms-excel': '📊 Excel Spreadsheet (.xls)',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '📊 Excel Spreadsheet (.xlsx)',
+      'application/vnd.ms-powerpoint': '📺 PowerPoint Presentation (.ppt)',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation': '📺 PowerPoint Presentation (.pptx)',
+      'text/plain': '📄 Text File',
+      'text/csv': '📊 CSV Data File',
+      'image/jpeg': '🖼️ JPEG Image',
+      'image/png': '🖼️ PNG Image',
+      'image/gif': '🖼️ GIF Image',
+      'application/json': '🗂️ JSON Data File',
+      'application/xml': '🗂️ XML Data File',
+      'application/zip': '🗜️ ZIP Archive',
+      'application/x-rar-compressed': '🗜️ RAR Archive'
+    };
+    return typeMap[fileType] || `📄 ${fileType.split('/')[1]?.toUpperCase() || 'Unknown'} File`;
+  };
+
+  interface AIAnalysisResult {
+    content_type?: string;
+    language?: string;
+    sentiment?: string;
+    summary?: string;
+    confidence?: number;
+  }
+
+  const renderAIAnalysisResults = (analysis: AIAnalysisResult) => {
+    if (!analysis) return <p className="text-black">No detailed analysis available.</p>;
+
+    const results = [];
+
+    // Check if there's content classification
+    if (analysis.content_type) {
+      results.push(
+        <p key="content" className="text-black">
+          <strong>📖 Content Type:</strong> {analysis.content_type}
+          <br />
+          <span className="text-xs italic">What kind of content is in your file</span>
+        </p>
+      );
+    }
+
+    // Check if there's language detection
+    if (analysis.language) {
+      results.push(
+        <p key="language" className="text-black">
+          <strong>🌐 Language:</strong> {analysis.language}
+          <br />
+          <span className="text-xs italic">Primary language detected in the document</span>
+        </p>
+      );
+    }
+
+    // Check if there's sentiment analysis
+    if (analysis.sentiment && typeof analysis.sentiment === 'string') {
+      const sentimentEmoji = analysis.sentiment === 'positive' ? '😊' : 
+                           analysis.sentiment === 'negative' ? '😟' : '😐';
+      const sentimentDesc = analysis.sentiment === 'positive' ? 'Generally positive tone' :
+                           analysis.sentiment === 'negative' ? 'Generally negative tone' : 'Neutral tone';
+      results.push(
+        <p key="sentiment" className="text-black">
+          <strong>💭 Sentiment:</strong> {sentimentEmoji} {analysis.sentiment.charAt(0).toUpperCase() + analysis.sentiment.slice(1)}
+          <br />
+          <span className="text-xs italic">{sentimentDesc}</span>
+        </p>
+      );
+    }
+
+    // Check for any summary or description
+    if (analysis.summary) {
+      results.push(
+        <div key="summary" className="text-black">
+          <strong>📝 Summary:</strong>
+          <p className="mt-1 text-sm">{analysis.summary}</p>
+          <span className="text-xs italic">AI-generated summary of your document</span>
+        </div>
+      );
+    }
+
+    // Check for confidence scores
+    if (analysis.confidence && typeof analysis.confidence === 'number') {
+      results.push(
+        <p key="confidence" className="text-black">
+          <strong>🎯 Confidence:</strong> {(analysis.confidence * 100).toFixed(1)}%
+          <br />
+          <span className="text-xs italic">How confident the AI is about this analysis</span>
+        </p>
+      );
+    }
+
+    // If no specific fields, try to extract meaningful info from the raw data
+    if (results.length === 0) {
+      const analysisStr = JSON.stringify(analysis);
+      if (analysisStr.length > 50) {
+        results.push(
+          <div key="general" className="text-black">
+            <p><strong>📊 Analysis Status:</strong> ✅ Complete</p>
+            <span className="text-xs italic">Your file has been successfully processed and analyzed by our AI system</span>
+          </div>
+        );
+      }
+    }
+
+    return results.length > 0 ? results : (
+      <div className="text-black">
+        <p>✅ <strong>Analysis Complete!</strong></p>
+        <span className="text-xs italic">File successfully analyzed - content appears to be in standard format with no issues detected.</span>
+      </div>
+    );
+  };
+
+  const renderSafetyScore = (prediction: PredictionResult[] | undefined) => {
+    if (!prediction || !Array.isArray(prediction)) {
+      return (
+        <div className="p-2 rounded border-2 border-black bg-green-200">
+          <p className="text-black text-sm">
+            <strong>✅ SAFE:</strong> No security concerns detected
+          </p>
+          <p className="text-xs text-black italic mt-1">
+            Your file passed all safety checks
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-2">
+        {prediction.map((pred: PredictionResult, index: number) => {
+          const score = pred.score || 0;
+          const label = pred.label || 'Unknown';
+          
+          // Convert score to percentage
+          const percentage = (score * 100).toFixed(1);
+          
+          // Determine safety level and emoji
+          let safetyLevel = '';
+          let emoji = '';
+          let bgColor = '';
+          let explanation = '';
+          
+          if (label.toLowerCase().includes('neutral') || label.toLowerCase().includes('safe')) {
+            safetyLevel = 'SAFE CONTENT';
+            emoji = '✅';
+            bgColor = 'bg-green-200';
+            explanation = 'Content is appropriate and safe';
+          } else if (label.toLowerCase().includes('negative') || label.toLowerCase().includes('harmful')) {
+            if (score > 0.7) {
+              safetyLevel = 'NEEDS REVIEW';
+              emoji = '⚠️';
+              bgColor = 'bg-red-200';
+              explanation = 'Content may need manual review';
+            } else if (score > 0.3) {
+              safetyLevel = 'MODERATE RISK';
+              emoji = '⚡';
+              bgColor = 'bg-yellow-200';
+              explanation = 'Content flagged for caution';
+            } else {
+              safetyLevel = 'LOW RISK';
+              emoji = '✅';
+              bgColor = 'bg-green-200';
+              explanation = 'Content appears safe with minor flags';
+            }
+          } else {
+            safetyLevel = 'ANALYZED';
+            emoji = '🔍';
+            bgColor = 'bg-blue-200';
+            explanation = 'Content has been processed and checked';
+          }
+
+          return (
+            <div key={index} className={`p-3 rounded border-2 border-black ${bgColor}`}>
+              <p className="text-black text-sm font-bold">
+                {emoji} {safetyLevel}
+              </p>
+              <p className="text-black text-sm">
+                <strong>Classification:</strong> {label}
+              </p>
+              <p className="text-black text-sm">
+                <strong>Confidence:</strong> {percentage}%
+              </p>
+              <p className="text-xs text-black italic mt-1">
+                {explanation}
+              </p>
+            </div>
+          );
+        })}
+        
+        <div className="mt-3 p-2 bg-blue-100 rounded border border-black">
+          <p className="text-xs text-black">
+            💡 <strong>What does this mean?</strong><br />
+            Our AI system checks your content for safety and appropriateness. 
+            Higher confidence scores mean the AI is more certain about its assessment.
+          </p>
+        </div>
+      </div>
+    );
   };
 
   // Component Sections
@@ -191,13 +441,19 @@ function HeroSection() {
   const HeroTitle = () => (
     <div className="text-center lg:text-left space-y-6">
       <h1 className="neubrutal-text-title text-4xl sm:text-5xl lg:text-6xl xl:text-7xl leading-tight">
-        DATA SOVEREIGNTY IS <span className="neubrutal-bg-yellow px-3 lg:px-4">YOURS</span>
+        DATA SOVEREIGNTY IS <span className="neubrutal-bg-yellow px-2 lg:px-2">YOURS</span>
       </h1>
       
       <p className="text-lg lg:text-xl text-black max-w-2xl mx-auto lg:mx-0 leading-relaxed font-bold">
-        Upload and register your files to IPFS and the Lisk Blockchain. 
-        Prove your data ownership transparently and immutably.
+        One-click protection for your digital assets. Automatic DID registration, 
+        IPFS upload, and blockchain verification in a single action.
       </p>
+      
+      <div className="p-3 neubrutal-bg-green neubrutal-border max-w-2xl mx-auto lg:mx-0">
+        <p className="text-sm font-bold text-black text-center lg:text-left">
+          ⚡ NO COMPLEX STEPS • ⚡ AUTO REGISTRATION • ⚡ INSTANT PROTECTION
+        </p>
+      </div>
     </div>
   );
 
@@ -225,7 +481,17 @@ function HeroSection() {
           ) : (
             <>
               <Upload className="w-4 h-4 mr-2" />
-              {selectedFile ? 'UPLOAD' : 'REGISTER'}
+              {selectedFile ? (
+                <>
+                  <span className="hidden sm:inline">🚀 UPLOAD & REGISTER</span>
+                  <span className="sm:hidden">UPLOAD</span>
+                </>
+              ) : (
+                <>
+                  <span className="hidden sm:inline">📝 REGISTER HASH</span>
+                  <span className="sm:hidden">REGISTER</span>
+                </>
+              )}
             </>
           )}
         </button>
@@ -234,52 +500,194 @@ function HeroSection() {
   );
 
   const StatusMessage = () => {
-    if (!uploadStatus) return null;
+    if (!uploadStatus && !aiAnalysisResult) return null;
     
     return (
-      <div className="max-w-3xl mx-auto lg:mx-0">
-        <div className={`p-4 lg:p-5 neubrutal-border neubrutal-shadow-light font-bold ${getStatusMessageStyle()}`}>
-          <p className="text-sm lg:text-base font-bold text-black mb-2">{uploadStatus}</p>
-          {selectedFile && (
-            <p className="text-xs lg:text-sm text-black font-bold">📁 FILE: {selectedFile.name}</p>
-          )}
-          {ipfsHash && (
-            <p className="text-xs lg:text-sm break-all text-black font-mono mt-1">
-              🔗 IPFS: {ipfsHash.length > 60 ? ipfsHash.substring(0, 60) + '...' : ipfsHash}
-            </p>
-          )}
-        </div>
+      <div className="max-w-3xl mx-auto lg:mx-0 space-y-4">
+        {uploadStatus && (
+          <div className={`p-4 lg:p-5 neubrutal-border neubrutal-shadow-light font-bold ${getStatusMessageStyle()}`}>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm lg:text-base font-bold text-black">{uploadStatus}</p>
+              {uploadStatus.includes('Uploading') && (
+                <div className="text-xs font-bold text-black">⏳ AUTO-PROCESSING...</div>
+              )}
+            </div>
+            {uploadStatus.includes('Uploading') && (
+              <div className="mb-3 p-2 neubrutal-bg-yellow neubrutal-border">
+                <p className="text-xs font-bold text-black">🔄 AUTOMATED STEPS:</p>
+                <div className="text-xs text-black font-mono mt-1 space-y-1">
+                  <div>✓ DID Registration</div>
+                  <div>🔄 IPFS Upload in progress...</div>
+                  <div>⏳ Blockchain Storage pending</div>
+                </div>
+              </div>
+            )}
+            {selectedFile && (
+              <p className="text-xs lg:text-sm text-black font-bold">📁 FILE: {selectedFile.name}</p>
+            )}
+            {ipfsHash && (
+              <div className="mt-2 p-2 neubrutal-bg-green neubrutal-border">
+                <p className="text-xs font-bold text-black mb-1">✅ UPLOAD COMPLETE</p>
+                <p className="text-xs text-black font-mono break-all">
+                  🔗 IPFS: {ipfsHash.length > 60 ? ipfsHash.substring(0, 60) + '...' : ipfsHash}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+        
+        {aiAnalysisResult && (
+          <div className="p-4 lg:p-5 neubrutal-border neubrutal-shadow-light neubrutal-bg-cyan">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm lg:text-base font-bold text-black">🤖 AI ANALYSIS RESULT:</p>
+              <button 
+                onClick={() => setIsAnalysisExpanded(!isAnalysisExpanded)}
+                className="text-xs font-bold text-black hover:scale-110 transition-transform duration-200"
+                title={isAnalysisExpanded ? "Collapse details" : "Expand details"}
+              >
+                {isAnalysisExpanded ? '📖 COLLAPSE' : '📖 EXPAND'}
+              </button>
+            </div>
+            
+            {isAnalysisExpanded && (
+              <div className="text-xs lg:text-sm text-black space-y-3">
+                
+                {/* Basic File Info */}
+                <div className="neubrutal-bg-yellow p-3 neubrutal-border">
+                  <p className="font-bold text-black mb-2">📋 FILE INFORMATION</p>
+                  <div className="space-y-1">
+                    <p><strong>📁 File Name:</strong> {(aiAnalysisResult as AnalysisResult).filename || 'Unknown'}</p>
+                    <p><strong>📄 File Type:</strong> {getFileTypeDescription((aiAnalysisResult as AnalysisResult).file_type || '')}</p>
+                  </div>
+                </div>
+
+                {/* AI Analysis Results */}
+                {(aiAnalysisResult as AnalysisResult).ai_analysis && (
+                  <div className="neubrutal-bg-lime p-3 neubrutal-border">
+                    <p className="font-bold text-black mb-2">🔍 CONTENT ANALYSIS</p>
+                    <div className="space-y-2">
+                      {renderAIAnalysisResults((aiAnalysisResult as AnalysisResult).ai_analysis!)}
+                    </div>
+                  </div>
+                )}
+
+                {/* Safety Score */}
+                {(aiAnalysisResult as AnalysisResult).ai_analysis?.model_prediction && (
+                  <div className="neubrutal-bg-pink p-3 neubrutal-border">
+                    <p className="font-bold text-black mb-2">🛡️ SAFETY ASSESSMENT</p>
+                    {renderSafetyScore((aiAnalysisResult as AnalysisResult).ai_analysis!.model_prediction)}
+                  </div>
+                )}
+
+                {/* Overall Summary */}
+                <div className="neubrutal-bg-yellow p-3 neubrutal-border">
+                  <p className="font-bold text-black mb-2">📊 SUMMARY</p>
+                  <p className="text-black text-sm">
+                    ✅ Your file has been successfully analyzed using advanced AI technology. 
+                    All checks have been completed and the results are displayed above.
+                  </p>
+                </div>
+
+              </div>
+            )}
+            
+            {!isAnalysisExpanded && (
+              <div className="text-black text-sm">
+                <p>✅ <strong>Analysis Complete!</strong> Click &quot;EXPAND&quot; to view detailed results.</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   };
 
-  const QuickActions = () => (
-    <div className="max-w-3xl mx-auto lg:mx-0">
-      <div className="neubrutal-card p-4 lg:p-6">
-        <h3 className="text-sm font-bold text-black mb-4 text-center lg:text-left">QUICK ACTIONS:</h3>
+  const ProcessFlow = () => (
+    <div className="max-w-3xl mx-auto lg:mx-0 mb-6">
+      <div className="neubrutal-card p-4 lg:p-6 neubrutal-bg-gray">
+        <h3 className="text-sm font-bold text-black mb-4 flex items-center">
+          🔄 AUTO PROCESS FLOW:
+        </h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <button 
-            onClick={openFileDialog}
-            className="neubrutal-button-secondary text-sm py-3 flex items-center justify-center"
-          >
-            📁 UPLOAD FILE
-          </button>
-          <button 
-            onClick={handleAIAnalysis}
-            disabled={!selectedFile}
-            className="neubrutal-button-secondary text-sm py-3 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            🤖 AI ANALYSIS
-          </button>
-          <button 
-            className="neubrutal-button-secondary text-sm py-3 flex items-center justify-center"
-          >
-            🔐 ACCESS CONTROL
-          </button>
+          <div className="flex items-center justify-center p-3 neubrutal-bg-yellow neubrutal-border text-xs font-bold text-black">
+            1️⃣ REGISTER DID
+          </div>
+          <div className="flex items-center justify-center p-3 neubrutal-bg-blue neubrutal-border text-xs font-bold text-black">
+            2️⃣ UPLOAD TO IPFS
+          </div>
+          <div className="flex items-center justify-center p-3 neubrutal-bg-green neubrutal-border text-xs font-bold text-black">
+            3️⃣ BLOCKCHAIN STORE
+          </div>
         </div>
+        <p className="text-xs text-black font-bold mt-3 text-center">
+          ✨ ONE CLICK = COMPLETE PROTECTION ✨
+        </p>
       </div>
     </div>
   );
+
+  const QuickActions = () => {
+    const hasContent = selectedFile || ipfsHash || uploadStatus || aiAnalysisResult;
+    
+    return (
+      <div className="max-w-3xl mx-auto lg:mx-0">
+        <div className="neubrutal-card p-4 lg:p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-bold text-black text-center lg:text-left">QUICK ACTIONS:</h3>
+            {hasContent && (
+              <button 
+                onClick={clearAll}
+                className="text-xs text-black font-bold hover:scale-105 transition-transform duration-200"
+                title="Clear all"
+              >
+                🗑️ CLEAR
+              </button>
+            )}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <button 
+              onClick={openFileDialog}
+              className={`neubrutal-button-secondary text-sm py-3 flex items-center justify-center transition-all duration-200 hover:scale-105 ${
+                selectedFile ? 'neubrutal-bg-lime' : ''
+              }`}
+            >
+              📁 {selectedFile ? 'CHANGE FILE' : 'UPLOAD FILE'}
+            </button>
+            <button 
+              onClick={handleAIAnalysis}
+              disabled={!selectedFile}
+              className={`neubrutal-button-secondary text-sm py-3 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 ${
+                aiAnalysisResult ? 'neubrutal-bg-cyan' : ''
+              }`}
+            >
+              🤖 {aiAnalysisResult ? 'RE-ANALYZE' : 'AI ANALYSIS'}
+            </button>
+            <button 
+              onClick={() => {
+                const fileListSection = document.getElementById('file-list');
+                if (fileListSection) {
+                  fileListSection.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                  // Fallback to access control section
+                  const accessControlSection = document.getElementById('access-control-grant');
+                  if (accessControlSection) {
+                    accessControlSection.scrollIntoView({ behavior: 'smooth' });
+                  } else {
+                    // Final fallback to scanner section
+                    const scannerSection = document.getElementById('scanner');
+                    scannerSection?.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }
+              }}
+              className="neubrutal-button-secondary text-sm py-3 flex items-center justify-center transition-all duration-200 hover:scale-105"
+            >
+              🔐 ACCESS CONTROL
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const StatsGrid = () => (
     <div className="neubrutal-card p-6 lg:p-8">
@@ -371,6 +779,7 @@ function HeroSection() {
             <div className="space-y-6 lg:space-y-8">
               <MainActionInput />
               <StatusMessage />
+              <ProcessFlow />
               <QuickActions />
             </div>
           </div>

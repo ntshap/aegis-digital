@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test AI Analysis Format</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { background: #f5f5f5; padding: 15px; margin: 15px 0; border-radius: 5px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .old-format { background: #fff3cd; }
+        .new-format { background: #d4edda; }
+    </style>
+</head>
+<body>
+    <h1>Test AI Analysis Format</h1>
+    
+    <h2>Old Format (JSON):</h2>
+    <div class="result old-format">
+        <pre id="oldFormat">{
+  "model_prediction": [
+    {
+      "label": "Neutral",
+      "score": 0.5929126143455505
+    },
+    {
+      "label": "Very Negative", 
+      "score": 0.12858980894088745
+    },
+    {
+      "label": "Negative",
+      "score": 0.11567963659763336
+    }
+  ]
+}</pre>
+    </div>
+
+    <h2>New Format (User Friendly):</h2>
+    <div class="result new-format">
+        <div id="newFormat">Loading...</div>
+    </div>
+
+    <button onclick="testAnalysis()">Test API</button>
+
+    <script>
+        async function testAnalysis() {
+            try {
+                const response = await fetch('http://localhost:8000/api/analyze-file', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        content: 'This is a test content for sentiment analysis. I hope this works well and gives us good results!'
+                    })
+                });
+                
+                const result = await response.json();
+                document.getElementById('newFormat').innerHTML = 
+                    '<pre>' + result.analysis.user_friendly_text + '</pre>';
+                
+            } catch (error) {
+                document.getElementById('newFormat').innerHTML = 
+                    'Error: ' + error.message;
+            }
+        }
+
+        // Test saat halaman dimuat
+        window.onload = function() {
+            testAnalysis();
+        };
+    </script>
+</body>
+</html>

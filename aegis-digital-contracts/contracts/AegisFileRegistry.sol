@@ -53,6 +53,10 @@ contract AegisFileRegistry is Ownable {
      * @return uint256 ID file yang baru dibuat.
      */
     function registerFile(string calldata _ipfsHash, string calldata _fileName) external returns (uint256) {
+        // Validasi keamanan dasar: pastikan nama file tidak kosong
+        require(bytes(_fileName).length > 0, "File name cannot be empty");
+        require(bytes(_ipfsHash).length > 0, "IPFS hash cannot be empty");
+        
         _fileIdCounter++;
         files[_fileIdCounter] = FileData({
             owner: msg.sender,

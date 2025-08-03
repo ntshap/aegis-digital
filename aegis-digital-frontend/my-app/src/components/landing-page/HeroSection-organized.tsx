@@ -4,7 +4,7 @@ import React, { useState, useRef } from 'react';
 import { useAccount } from 'wagmi';
 import { useFileOperations } from '../../hooks/useFileOperations';
 import { useDIDOperations } from '../../hooks/useDIDOperations';
-import { IPFSService } from '../../services/ipfs';
+import { ipfsService } from '../../services/ipfs';
 import { AIService } from '../../services/ai';
 import { 
   Upload, 
@@ -102,7 +102,7 @@ function HeroSection() {
 
     try {
       // Upload to IPFS
-      const cid = await IPFSService.uploadFile(selectedFile);
+      const cid = await ipfsService.uploadFile(selectedFile);
       setIpfsHash(cid);
       setUploadStatus('File uploaded to IPFS successfully!');
 
@@ -273,6 +273,16 @@ function HeroSection() {
             🤖 AI ANALYSIS
           </button>
           <button 
+            onClick={() => {
+              const accessControlSection = document.getElementById('access-control');
+              if (accessControlSection) {
+                accessControlSection.scrollIntoView({ behavior: 'smooth' });
+              } else {
+                // Fallback to scanner section
+                const scannerSection = document.getElementById('scanner');
+                scannerSection?.scrollIntoView({ behavior: 'smooth' });
+              }
+            }}
             className="neubrutal-button-secondary text-sm py-3 flex items-center justify-center"
           >
             🔐 ACCESS CONTROL

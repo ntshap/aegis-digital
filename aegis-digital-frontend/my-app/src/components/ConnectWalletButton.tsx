@@ -36,24 +36,21 @@ function ConnectWalletButtonContent() {
 
   if (isConnected) {
     return (
-      <div className="flex items-center space-x-4">
-        <div className="hidden sm:flex items-center space-x-3 px-4 py-2 neubrutal-bg-lime neubrutal-border neubrutal-shadow-light">
-          <div className="w-3 h-3 bg-black rounded-full"></div>
-          <span className="text-black font-bold text-sm">✅ CONNECTED</span>
-        </div>
-        <div className="flex items-center space-x-3 px-4 py-2 neubrutal-card">
-          <div className="w-8 h-8 neubrutal-bg-yellow neubrutal-border flex items-center justify-center">
-            <Wallet className="w-4 h-4 text-black" />
+      <div className="flex items-center space-x-2">
+        {/* Wallet Address Display - Compact */}
+        <div className="flex items-center space-x-2 px-2 py-1.5 neubrutal-card">
+          <div className="w-6 h-6 neubrutal-bg-yellow neubrutal-border flex items-center justify-center">
+            <Wallet className="w-3 h-3 text-black" />
           </div>
-          <span className="text-lg font-mono text-black font-bold">
-            {address?.slice(0, 6)}...{address?.slice(-4)}
+          <span className="wallet-address text-xs font-mono text-black font-bold whitespace-nowrap">
+            {address?.slice(0, 4)}...{address?.slice(-4)}
           </span>
           <button 
             onClick={() => disconnect()} 
-            className="neubrutal-button-secondary text-xs flex items-center"
+            className="neubrutal-button-secondary text-xs flex items-center px-1.5 py-1"
+            title="Disconnect"
           >
-            <LogOut className="w-3 h-3 mr-1" />
-            DISCONNECT
+            <LogOut className="w-3 h-3" />
           </button>
         </div>
       </div>
@@ -64,11 +61,11 @@ function ConnectWalletButtonContent() {
     <button 
       onClick={handleConnect} 
       disabled={isPending}
-      className="neubrutal-button text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+      className="neubrutal-button text-xs disabled:opacity-50 disabled:cursor-not-allowed px-3 py-1.5"
     >
       {isPending ? (
         <div className="flex items-center">
-          <div className="animate-spin w-4 h-4 border-2 border-black border-t-transparent rounded-full mr-2"></div>
+          <div className="animate-spin w-3 h-3 border-2 border-black border-t-transparent rounded-full mr-1"></div>
           CONNECTING...
         </div>
       ) : (

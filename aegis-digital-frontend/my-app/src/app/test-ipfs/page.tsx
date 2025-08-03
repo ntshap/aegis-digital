@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { IPFSService } from '../../services/ipfs';
+import { ipfsService } from '../../services/ipfs';
 
 export default function TestIPFS() {
   const [status, setStatus] = useState('Ready to test IPFS');
@@ -21,7 +21,7 @@ export default function TestIPFS() {
 
     try {
       setStatus('Testing IPFS upload...');
-      const cid = await IPFSService.uploadFile(selectedFile);
+      const cid = await ipfsService.uploadFile(selectedFile);
       setStatus(`Success! File uploaded to IPFS: ${cid}`);
     } catch (error) {
       setStatus(`Error: ${error}`);

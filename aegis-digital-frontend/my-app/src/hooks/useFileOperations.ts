@@ -3,14 +3,12 @@ import {
   useAccount,
   useReadContract,
   useWriteContract,
-  useWaitForTransactionReceipt,
 } from 'wagmi';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQueries } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
   CONTRACT_ADDRESSES,
-  FILE_REGISTRY_ABI,
-  ACCESS_CONTROL_ABI
+  FILE_REGISTRY_ABI
 } from '../config/contracts';
 
 interface FileData {
@@ -45,8 +43,8 @@ export function useFileOperations() {
 
   // 2. Memuat detail setiap file secara paralel.
   //    Ini adalah cara efisien untuk mengambil data on-chain.
-  const fileQueries = (userFileIds as bigint[] || []).map((fileId: bigint) => {
-    return {
+  const fileQueries = useQueries({
+    queries: (userFileIds as bigint[] || []).map((fileId: bigint) => ({
       queryKey: ['fileData', fileId.toString()],
       queryFn: async () => {
         if (!publicClient) throw new Error('Public client not available');
@@ -56,11 +54,19 @@ export function useFileOperations() {
           functionName: 'getFile',
           args: [fileId],
         });
-        return fileData as FileData;
+        return { id: fileId, ...fileData } as FileData & { id: bigint };
       },
       enabled: isConnected && !!address,
-    };
+    })),
   });
+
+  // Transform file data for easier consumption
+  const userFiles = fileQueries.map((query, index) => ({
+    id: (userFileIds as bigint[])?.[index] || BigInt(0),
+    data: query.data,
+    isLoading: query.isLoading,
+    error: query.error,
+  }));
 
   // 3. Mutasi untuk mendaftarkan file baru.
   const registerFileMutation = useMutation({
@@ -78,6 +84,17 @@ export function useFileOperations() {
       toast.success('Transaksi pendaftaran file berhasil dikirim!');
       // Invalidasi cache untuk memperbarui daftar file secara otomatis.
       queryClient.invalidateQueries({ queryKey: ['fileData'] });
+      if (address) {
+        queryClient.invalidateQueries({ 
+          queryKey: [
+            'contract',
+            'read',
+            CONTRACT_ADDRESSES.FILE_REGISTRY,
+            'getFilesByOwner',
+            [address]
+          ]
+        });
+      }
       // Gunakan useWaitForTransactionReceipt untuk menunggu konfirmasi.
       if (publicClient) {
         publicClient.waitForTransactionReceipt({ hash: txHash as `0x${string}` }).then(() => {
@@ -96,8 +113,8 @@ export function useFileOperations() {
 
   return {
     userFileIds,
+    userFiles,
     isFilesLoading,
-    fileQueries,
     registerFile: registerFileMutation.mutateAsync,
     isRegistering: registerFileMutation.isPending,
   };
