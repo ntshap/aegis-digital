@@ -82,3 +82,6 @@ logs
 # Temporary files
 *.tmp
 *.temp
+
+# Old directory structure (moved to root)
+aegis-digital-frontend/
