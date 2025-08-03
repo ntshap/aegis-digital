@@ -1,0 +1,972 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import bold neubrutalism fonts */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap');
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #f5f5f5;
+  color: #000000;
+  line-height: 1.4;
+  overflow-x: hidden;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Neubrutalism Design System */
+.neubrutal-border {
+  border: 4px solid #000000;
+}
+
+.neubrutal-shadow {
+  box-shadow: 6px 6px 0px #000000;
+}
+
+.neubrutal-shadow-heavy {
+  box-shadow: 8px 8px 0px #000000;
+}
+
+.neubrutal-shadow-light {
+  box-shadow: 4px 4px 0px #000000;
+}
+
+.neubrutal-card {
+  border: 4px solid #000000;
+  box-shadow: 6px 6px 0px #000000;
+  background-color: white;
+  transform: translate(0, 0);
+  transition: all 0.15s ease;
+}
+
+.neubrutal-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 8px 8px 0px #000000;
+}
+
+.neubrutal-button {
+  border: 4px solid #000000;
+  box-shadow: 4px 4px 0px #000000;
+  background-color: #facc15;
+  font-weight: 700;
+  padding: 8px 16px;
+  color: black;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transform: translate(0, 0);
+  transition: all 0.1s ease;
+  font-family: 'Space Grotesk', sans-serif;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .neubrutal-button {
+    padding: 12px 24px;
+  }
+}
+
+.neubrutal-button:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0px #000000;
+}
+
+.neubrutal-button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px #000000;
+}
+
+.neubrutal-button-secondary {
+  border: 4px solid #000000;
+  box-shadow: 4px 4px 0px #000000;
+  background-color: #f9a8d4;
+  font-weight: 700;
+  padding: 8px 16px;
+  color: black;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transform: translate(0, 0);
+  transition: all 0.1s ease;
+  font-family: 'Space Grotesk', sans-serif;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .neubrutal-button-secondary {
+    padding: 12px 24px;
+  }
+}
+
+.neubrutal-button-secondary:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0px #000000;
+}
+
+.neubrutal-input {
+  border: 4px solid #000000;
+  background-color: white;
+  padding: 10px 14px;
+  color: black;
+  font-weight: 500;
+  font-family: 'JetBrains Mono', monospace;
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 14px;
+}
+
+@media (min-width: 640px) {
+  .neubrutal-input {
+    padding: 12px 16px;
+    font-size: 16px;
+  }
+}
+
+.neubrutal-input:focus {
+  outline: none;
+  box-shadow: 4px 4px 0px #000000, 0 0 0 2px #ffff00;
+}
+
+.neubrutal-text-bold {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  color: #000000;
+}
+
+.neubrutal-text-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  color: #000000;
+  font-size: 2rem;
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+
+@media (min-width: 640px) {
+  .neubrutal-text-title {
+    font-size: 2.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .neubrutal-text-title {
+    font-size: 3rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .neubrutal-text-title {
+    font-size: 3.5rem;
+  }
+}
+
+.neubrutal-bg-yellow {
+  background-color: #ffff00;
+}
+
+.neubrutal-bg-pink {
+  background-color: #ff69b4;
+}
+
+.neubrutal-bg-cyan {
+  background-color: #00ffff;
+}
+
+.neubrutal-bg-lime {
+  background-color: #32ff32;
+}
+
+/* Utility classes for perfect centering */
+.neubrutal-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.neubrutal-center-vertical {
+  display: flex;
+  align-items: center;
+}
+
+.neubrutal-center-horizontal {
+  display: flex;
+  justify-content: center;
+  text-align: center;
+}
+
+/* Container improvements */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .container {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1280px;
+  }
+}
+
+/* Section spacing */
+section {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+@media (min-width: 640px) {
+  section {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+  }
+}
+
+@media (min-width: 768px) {
+  section {
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  section {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+  }
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 640px) {
+  /* Improve touch targets */
+  .neubrutal-button, .neubrutal-button-secondary {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Ensure text is readable */
+  body {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+  }
+  
+  /* Improve input accessibility on mobile */
+  .neubrutal-input {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
+
+/* Prevent horizontal scroll on mobile */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+/* Smooth scrolling for navigation */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Enhanced hover effects for better UX */
+.hover\:scale-102:hover {
+  transform: scale(1.02);
+}
+
+.hover\:scale-105:hover {
+  transform: scale(1.05);
+}
+
+/* Better visual hierarchy */
+.neubrutal-card {
+  border: 4px solid #000000;
+  box-shadow: 6px 6px 0px #000000;
+  background-color: white;
+  transform: translate(0, 0);
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.neubrutal-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 8px 8px 0px #000000;
+}
+
+/* Enhanced focus states for accessibility */
+.neubrutal-input:focus {
+  outline: none;
+  box-shadow: 4px 4px 0px #000000, 0 0 0 3px #ffff00;
+  transform: translate(-1px, -1px);
+}
+
+.neubrutal-button:focus,
+.neubrutal-button-secondary:focus {
+  outline: none;
+  box-shadow: 4px 4px 0px #000000, 0 0 0 3px #ffff00;
+}
+
+/* Better spacing and alignment */
+.section-spacing {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}
+
+@media (min-width: 1024px) {
+  .section-spacing {
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+  }
+}
+
+/* Grid improvements */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .stats-grid {
+    gap: 1.5rem;
+  }
+}
+
+/* Enhanced button consistency */
+.neubrutal-button,
+.neubrutal-button-secondary {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+@media (min-width: 640px) {
+  .neubrutal-button,
+  .neubrutal-button-secondary {
+    font-size: 0.875rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .neubrutal-button,
+  .neubrutal-button-secondary {
+    font-size: 1rem;
+  }
+}
+
+/* Enhanced gradient backgrounds */
+.gradient-bg {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.gradient-bg-2 {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.gradient-bg-3 {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.gradient-bg-4 {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+/* Enhanced glass morphism effect */
+.glass {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+/* Modern card styles - Enhanced readability */
+.modern-card {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+
+.modern-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  border-color: rgba(99, 102, 241, 0.1);
+}
+
+/* Enhanced bento grid card styles */
+.bento-card {
+  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.08),
+    0 1px 4px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
+  overflow: hidden;
+  min-height: 160px;
+  line-height: 1.6;
+  backdrop-filter: blur(8px);
+}
+
+.bento-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.3), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.bento-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.15),
+    0 8px 16px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border-color: rgba(99, 102, 241, 0.25);
+}
+
+.bento-card:hover::before {
+  opacity: 1;
+}
+
+.bento-card-large {
+  grid-column: span 2;
+  grid-row: span 2;
+  padding: 40px;
+  min-height: 320px;
+  border-radius: 24px;
+}
+
+.bento-card-wide {
+  grid-column: span 2;
+  min-height: 160px;
+  padding: 28px;
+}
+
+.bento-card-tall {
+  grid-row: span 2;
+  min-height: 280px;
+}
+
+/* Enhanced gradient text with animation */
+.gradient-text {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #ec4899 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  font-weight: 800;
+  animation: gradientShift 6s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Premium button design */
+.btn-primary {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #ec4899 100%);
+  background-size: 200% 200%;
+  border: none;
+  border-radius: 16px;
+  padding: 16px 32px;
+  font-weight: 700;
+  font-size: 15px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: 
+    0 8px 24px rgba(79, 70, 229, 0.3),
+    0 4px 12px rgba(124, 58, 237, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  letter-spacing: 0.025em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  animation: gradientShift 6s ease-in-out infinite;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-primary:hover::before {
+  left: 100%;
+}
+
+.btn-primary:hover {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 
+    0 16px 40px rgba(79, 70, 229, 0.4),
+    0 8px 20px rgba(124, 58, 237, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.btn-primary:active {
+  transform: translateY(-2px) scale(1.02);
+}
+
+.btn-secondary {
+  background: rgba(79, 70, 229, 0.08);
+  border: 1px solid rgba(79, 70, 229, 0.2);
+  border-radius: 12px;
+  padding: 10px 20px;
+  font-weight: 500;
+  font-size: 14px;
+  color: #4f46e5;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  letter-spacing: 0.025em;
+}
+
+.btn-secondary:hover {
+  background: rgba(79, 70, 229, 0.12);
+  border-color: rgba(79, 70, 229, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+}
+
+/* Stats cards - Ultra clean */
+.stats-card {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: 12px;
+  padding: 18px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.stats-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #4f46e5, #7c3aed);
+}
+
+.stats-number {
+  font-size: 1.75rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  margin-bottom: 2px;
+  line-height: 1.2;
+}
+
+/* Beautiful floating animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-15px); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Enhanced floating elements */
+.floating {
+  animation: float 6s ease-in-out infinite;
+}
+
+.floating-delayed {
+  animation: float 6s ease-in-out infinite 3s;
+}
+
+/* Animated background orbs */
+.background-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.6;
+  animation: float 8s ease-in-out infinite;
+}
+
+.background-orb-1 {
+  width: 200px;
+  height: 200px;
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  top: 20%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.background-orb-2 {
+  width: 300px;
+  height: 300px;
+  background: linear-gradient(45deg, #f093fb, #f5576c);
+  top: 60%;
+  right: 10%;
+  animation-delay: 2s;
+}
+
+.background-orb-3 {
+  width: 150px;
+  height: 150px;
+  background: linear-gradient(45deg, #4facfe, #00f2fe);
+  bottom: 20%;
+  left: 50%;
+  animation-delay: 4s;
+}
+
+/* Advanced scroll animations */
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(79, 70, 229, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(79, 70, 229, 0.8), 0 0 60px rgba(124, 58, 237, 0.6);
+  }
+}
+
+/* Enhanced floating elements */
+.floating {
+  animation: float 6s ease-in-out infinite;
+}
+
+.floating-delayed {
+  animation: float 6s ease-in-out infinite 3s;
+}
+
+.glow-on-hover {
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
+/* Scroll reveal animations */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(50px);
+  transition: all 0.6s ease-out;
+}
+
+.scroll-reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Enhanced background patterns */
+.cosmic-bg {
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+}
+
+/* Premium gradient borders */
+.gradient-border {
+  position: relative;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 2px;
+  background: linear-gradient(45deg, #f093fb, #f5576c, #4facfe, #00f2fe);
+  border-radius: inherit;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: xor;
+  -webkit-mask-composite: xor;
+}
+
+/* Enhanced stats cards */
+.feature-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(217, 70, 239, 0.1));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+/* Sidebar navigation style */
+.sidebar-nav {
+  background: rgba(15, 15, 35, 0.95);
+  backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-item {
+  padding: 12px 20px;
+  margin: 4px 12px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.nav-item:hover {
+  background: rgba(139, 92, 246, 0.1);
+  border-left: 3px solid #8b5cf6;
+}
+
+.nav-item.active {
+  background: rgba(139, 92, 246, 0.2);
+  border-left: 3px solid #8b5cf6;
+}
+
+/* Glow effects */
+.glow-purple {
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+}
+
+.glow-pink {
+  box-shadow: 0 0 20px rgba(217, 70, 239, 0.3);
+}
+
+/* Animated background */
+.animated-bg {
+  background: linear-gradient(-45deg, #0f0f23, #1a1a2e, #16213e, #1a1a2e);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Header styles */
+.header-glass {
+  background: rgba(15, 15, 35, 0.8);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Footer styles - Readable dark theme */
+.footer-bg {
+  background: #1f2937;
+  color: #e5e7eb;
+}
+
+/* Trusted by section */
+.trusted-logo {
+  filter: grayscale(100%) brightness(70%) opacity(50%);
+  transition: all 0.3s ease;
+}
+
+.trusted-logo:hover {
+  filter: grayscale(0%) brightness(100%) opacity(100%);
+  transform: scale(1.05);
+}
+
+/* Header responsive fixes - Clean spacing */
+.header-clean-spacing {
+  padding: 1rem 0;
+}
+
+@media (max-width: 1024px) {
+  .header-clean-spacing {
+    padding: 0.75rem 0;
+  }
+  
+  /* Clean wallet address display */
+  .wallet-address {
+    font-size: 0.875rem !important;
+    min-width: 80px;
+    text-align: center;
+  }
+  
+  /* Better button spacing */
+  .neubrutal-card {
+    padding: 0.5rem 0.75rem !important;
+  }
+  
+  /* Consistent navigation spacing */
+  .nav-spacing {
+    gap: 1rem !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-clean-spacing {
+    padding: 0.5rem 0;
+  }
+  
+  .wallet-address {
+    font-size: 0.75rem !important;
+    min-width: 70px;
+  }
+  
+  .neubrutal-card {
+    padding: 0.375rem 0.5rem !important;
+  }
+  
+  /* Mobile navigation spacing */
+  .mobile-nav-spacing {
+    gap: 0.75rem !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .wallet-address {
+    font-size: 0.7rem !important;
+    min-width: 65px;
+  }
+  
+  /* Very small screens - minimal padding */
+  .neubrutal-card {
+    padding: 0.25rem 0.5rem !important;
+  }
+  
+  /* Ensure proper viewport handling */
+  body {
+    min-width: 320px;
+  }
+  
+  /* Prevent content overflow */
+  * {
+    max-width: 100vw;
+    box-sizing: border-box;
+  }
+}
+
+/* Compact centered layout for header */
+.header-centered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+}
+
+.header-group {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+/* Responsive adjustments */
+@media (min-width: 1024px) {
+  .header-group {
+    gap: 2rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .header-group {
+    gap: 2.5rem;
+  }
+}

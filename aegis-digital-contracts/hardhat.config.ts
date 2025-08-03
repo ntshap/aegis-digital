@@ -24,8 +24,8 @@ const config: HardhatUserConfig = {
         network: "liskSepolia",
         chainId: 4202,
         urls: {
-          api: "https://sepolia-blockscout.lisk.com/api", // URL API Blockscout Lisk Sepolia
-          browser: "https://sepolia-blockscout.lisk.com", // URL browser Blockscout Lisk Sepolia
+          apiURL: "https://sepolia-blockscout.lisk.com/api", // URL API Blockscout Lisk Sepolia
+          browserURL: "https://sepolia-blockscout.lisk.com", // URL browser Blockscout Lisk Sepolia
         },
       },
     ],
