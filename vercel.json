@@ -1,12 +1,13 @@
 {
-  "buildCommand": "cd aegis-digital-frontend/my-app && npm run build",
-  "outputDirectory": "aegis-digital-frontend/my-app/.next",
-  "installCommand": "cd aegis-digital-frontend/my-app && npm install",
-  "devCommand": "cd aegis-digital-frontend/my-app && npm run dev",
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm install",
+  "devCommand": "npm run dev",
   "framework": "nextjs",
+  "rootDirectory": "aegis-digital-frontend/my-app",
   "regions": ["iad1"],
   "functions": {
-    "aegis-digital-frontend/my-app/src/app/api/**/*.ts": {
+    "src/app/api/**/*.ts": {
       "runtime": "nodejs18.x"
     }
   },
