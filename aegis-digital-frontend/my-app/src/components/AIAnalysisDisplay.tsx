@@ -13,7 +13,13 @@ interface AnalysisResult {
   // Added support for new AI backend format
   filename?: string;
   file_type?: string;
-  ai_analysis?: any;
+  ai_analysis?: {
+    content?: string;
+    prediction?: string | string[] | PredictionResult | PredictionResult[];
+    model_prediction?: string | string[] | PredictionResult | PredictionResult[];
+    user_friendly_text?: string;
+    metadata?: Record<string, unknown>;
+  };
 }
 
 interface AIAnalysisDisplayProps {

@@ -3,7 +3,12 @@ const AI_BACKEND_URL = process.env.NEXT_PUBLIC_AI_BACKEND_URL || 'http://127.0.0
 export interface AIAnalysisResult {
   filename: string;
   file_type: string;
-  ai_analysis: unknown;
+  ai_analysis: {
+    content?: string;
+    prediction?: string;
+    model_prediction?: string | object;
+    user_friendly_text?: string;
+  };
 }
 
 export class AIService {

@@ -82,7 +82,7 @@ const RECENT_ACTIVITIES = [
 
 function HeroSection() {
   // Hooks
-  const { address, isConnected } = useAccount();
+  const { address: _address, isConnected } = useAccount();
   const { registerFile, isRegistering: isUploadingToContract } = useFileOperations();
   const { registerDID, isRegistering } = useDIDOperations();
   

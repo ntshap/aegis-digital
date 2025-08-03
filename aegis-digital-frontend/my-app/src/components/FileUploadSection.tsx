@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAccount, useReadContract, useSimulateContract, useWriteContract } from 'wagmi';
 import { ethers } from 'ethers';
 import { CONTRACT_ADDRESSES, DID_REGISTRY_ABI, FILE_REGISTRY_ABI, ACCESS_CONTROL_ABI } from '../config/contracts';
@@ -9,7 +9,6 @@ import AIAnalysisDisplay from './AIAnalysisDisplay';
 import { 
   BadgeCheck, 
   Upload, 
-  Zap, 
   Share2, 
   Loader2 
 } from 'lucide-react';

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAccount, useReadContract, useSimulateContract, useWriteContract } from 'wagmi';
 import { ethers } from 'ethers';
-import { CONTRACT_ADDRESSES, DID_REGISTRY_ABI, ACCESS_CONTROL_ABI, FILE_REGISTRY_ABI } from '../config/contracts';
+import { CONTRACT_ADDRESSES, DID_REGISTRY_ABI, ACCESS_CONTROL_ABI } from '../config/contracts';
 import { useFileOperations } from '../hooks/useFileOperations';
 import { AIService } from '../services/ai';
 import { 
@@ -20,8 +20,6 @@ import {
   MoreVertical,
   Share2,
   Trash2,
-  Eye,
-  Zap,
   Brain
 } from 'lucide-react';
 
@@ -43,7 +41,16 @@ interface FileCardProps {
 
 const FileCard: React.FC<FileCardProps> = ({ file, fileId, onGrantAccess, onAIAnalysis }) => {
   const [showDetails, setShowDetails] = useState(false);
-  const [aiAnalysisResult, setAiAnalysisResult] = useState<any>(null);
+  const [aiAnalysisResult, setAiAnalysisResult] = useState<{
+    filename: string;
+    file_type: string;
+    ai_analysis: {
+      content?: string;
+      prediction?: string;
+      model_prediction?: string | object;
+      user_friendly_text?: string;
+    };
+  } | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   
   const formatDate = (timestamp: bigint) => {
@@ -324,7 +331,7 @@ export function FileListSection() {
     }, 100);
   };
 
-  const handleAIAnalysis = (fileId: bigint, fileName: string, ipfsHash: string) => {
+  const handleAIAnalysis = (fileId: bigint, fileName: string, _ipfsHash: string) => {
     setStatus(`✅ AI Analysis completed for ${fileName}! Results are now available.`);
     // In a real implementation, you might want to update the blockchain
     // to mark the file as analyzed using the setFileAnalyzed function
@@ -345,7 +352,7 @@ export function FileListSection() {
   };
 
   // Access Control Logic
-  const [checkAccessArgs, setCheckAccessArgs] = useState<[string, string]>([ethers.ZeroHash, ethers.ZeroHash]);
+  const [checkAccessArgs] = useState<[string, string]>([ethers.ZeroHash, ethers.ZeroHash]);
   const { data: checkAccessResult } = useReadContract({
     address: CONTRACT_ADDRESSES.ACCESS_CONTROL,
     abi: ACCESS_CONTROL_ABI,

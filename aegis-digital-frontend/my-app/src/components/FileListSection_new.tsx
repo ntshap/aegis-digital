@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAccount, useReadContract, useSimulateContract, useWriteContract } from 'wagmi';
 import { ethers } from 'ethers';
-import { CONTRACT_ADDRESSES, DID_REGISTRY_ABI, ACCESS_CONTROL_ABI, FILE_REGISTRY_ABI } from '../config/contracts';
+import { CONTRACT_ADDRESSES, DID_REGISTRY_ABI, ACCESS_CONTROL_ABI } from '../config/contracts';
 import { useFileOperations } from '../hooks/useFileOperations';
 import { 
   User, 
@@ -13,7 +13,6 @@ import {
   Loader2,
   Calendar,
   Database,
-  ExternalLink,
   CheckCircle,
   XCircle,
   MoreVertical,
@@ -221,7 +220,7 @@ export function FileListSection() {
   };
 
   // Access Control Logic
-  const [checkAccessArgs, setCheckAccessArgs] = useState<[string, string]>([ethers.ZeroHash, ethers.ZeroHash]);
+  const [checkAccessArgs] = useState<[string, string]>([ethers.ZeroHash, ethers.ZeroHash]);
   const { data: checkAccessResult } = useReadContract({
     address: CONTRACT_ADDRESSES.ACCESS_CONTROL,
     abi: ACCESS_CONTROL_ABI,

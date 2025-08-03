@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Shield, Brain, Lock, Upload, Zap, FileCheck } from 'lucide-react';
+import { Brain, Lock, Upload, Zap, FileCheck } from 'lucide-react';
 
 export function FeaturesSectionSimple() {
   return (
